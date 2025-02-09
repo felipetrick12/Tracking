@@ -1,3 +1,3 @@
-import Login from './Login';
+import Notification from './Notification';
 
-export { Login };
+export { Notification };

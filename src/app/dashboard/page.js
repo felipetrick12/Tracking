@@ -1,0 +1,9 @@
+'use client';
+
+import withAuth from '@/hoc/withAuth';
+
+const Dashboard = () => {
+	return <h1>Welcome to the Dashboard</h1>;
+};
+
+export default withAuth(Dashboard);
