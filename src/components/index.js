@@ -1,3 +1,3 @@
 import Notification from './Notification';
-
-export { Notification };
+import UserDropdown from './UserDropdown';
+export { Notification, UserDropdown };
