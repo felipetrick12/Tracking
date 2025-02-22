@@ -7,6 +7,7 @@ import toast, { Toaster } from 'react-hot-toast';
 
 import { useAuth } from '@/context/AuthProvider';
 import { LOGIN_MUTATION } from '@/graphql/mutations';
+import Image from 'next/image';
 
 const LoginPage = () => {
 	const { auth, setAuth } = useAuth(); // ✅ Verificar si el usuario ya está autenticado
@@ -41,17 +42,19 @@ const LoginPage = () => {
 	};
 
 	return (
-		<div className="flex min-h-screen flex-col justify-center items-center px-6 py-12 lg:px-8">
+		<div className="flex min-h-screen flex-col justify-center items-center bg-white ">
 			<Toaster position="top-right" />
 
 			<div className="sm:mx-auto sm:w-full sm:max-w-sm">
-				<img
-					className="mx-auto h-10 w-auto"
-					src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=primary&shade=600"
+				<Image
+					className="mx-auto"
+					src={'/assets/Images/Vector.png'}
 					alt="Your Company"
+					width={200}
+					height={20}
 				/>
-				<h2 className="mt-10 text-center text-2xl font-bold tracking-tight text-primary">
-					Sign in to your account
+				<h2 className="mt-5 text-center text-[25px] font-bold  text-sm text-primary font-bold">
+					Pinnacle Management
 				</h2>
 			</div>
 
@@ -59,8 +62,8 @@ const LoginPage = () => {
 				<form className="space-y-6" onSubmit={handleSubmit}>
 					{/* ✅ Campo de Email */}
 					<div>
-						<label htmlFor="email" className="block text-sm font-medium text-primary">
-							Email address
+						<label htmlFor="email" className="block text-sm text-[16px] text-primary font-bold">
+							Email
 						</label>
 						<div className="mt-2">
 							<input
@@ -78,7 +81,7 @@ const LoginPage = () => {
 
 					{/* ✅ Campo de Password */}
 					<div>
-						<label htmlFor="password" className="block text-sm font-medium text-primary">
+						<label htmlFor="password" className="block text-sm text-[16px] text-primary font-bold">
 							Password
 						</label>
 						<div className="mt-2 relative">
@@ -98,9 +101,9 @@ const LoginPage = () => {
 								onClick={() => setShowPassword((prev) => !prev)}
 							>
 								{showPassword ? (
-									<EyeSlashIcon className="w-5 h-5 text-gray-500" />
-								) : (
 									<EyeIcon className="w-5 h-5 text-gray-500" />
+								) : (
+									<EyeSlashIcon className="w-5 h-5 text-gray-500" />
 								)}
 							</button>
 						</div>

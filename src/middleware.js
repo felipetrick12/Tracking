@@ -1,31 +1,61 @@
+import { GET_ME } from '@/graphql/queries/auth';
+import { executeGraphQL } from '@/lib/apolloServer';
 import { NextResponse } from 'next/server';
 
-const protectedRoutes = ['/dashboard'];
+const roleProtectedRoutes = {
+	admin: ['/dashboard', '/clients', '/settings', '/users', '/permissions'],
+	designer: ['/dashboard', '/orders', '/settings'],
+	user: ['/dashboard']
+};
+
 const publicRoutes = ['/', '/register'];
 
-export default function middleware(req) {
-	// ✅ Leer el token desde las cookies
+export default async function middleware(req) {
 	const token = req.cookies.get('token')?.value || null;
 	console.log('🔍 Checking route:', req.nextUrl.pathname);
 	console.log('🔑 Token:', token ? 'Exists' : 'Not Found');
 
-	// 🚀 Si el usuario tiene token, evitar que entre a login o register
-	if (token && publicRoutes.includes(req.nextUrl.pathname)) {
-		console.log('✅ User is authenticated, redirecting to /dashboard');
-		return NextResponse.redirect(new URL('/dashboard', req.url));
+	// ✅ Allow public routes without authentication
+	if (publicRoutes.includes(req.nextUrl.pathname)) {
+		console.log('✅ Public route, access granted:', req.nextUrl.pathname);
+		return NextResponse.next();
 	}
 
-	// 🚀 Si el usuario NO tiene token y quiere acceder a rutas protegidas
-	if (!token && protectedRoutes.includes(req.nextUrl.pathname)) {
-		console.log('❌ User is not authenticated, redirecting to /');
+	// 🚀 If no token and trying to access a protected route, redirect to login
+	if (!token) {
+		console.log('❌ No token, redirecting to home');
 		return NextResponse.redirect(new URL('/', req.url));
 	}
 
-	// ✅ Si todo está bien, continuar con la petición
-	return NextResponse.next();
+	try {
+		// 🔥 Fetch user data from GraphQL
+		const { data } = await executeGraphQL(GET_ME, {}, token);
+
+		if (!data?.me) {
+			console.log('❌ User not found, clearing token and redirecting to login');
+			const response = NextResponse.redirect(new URL('/', req.url));
+			response.cookies.delete('token'); // 🔥 Remove invalid token
+			return response;
+		}
+
+		const role = data.me.role || 'user';
+
+		// 🚀 Get allowed routes based on role
+		const allowedRoutes = roleProtectedRoutes[role] || [];
+
+		// ✅ Store allowed routes in a cookie (JSON stringified)
+		const response = NextResponse.next();
+		response.cookies.set('allowedRoutes', JSON.stringify(allowedRoutes), { path: '/' });
+
+		console.log('✅ Allowed routes stored in cookie:', allowedRoutes);
+		return response;
+	} catch (error) {
+		console.error('⚠️ Error validating user:', error);
+		return NextResponse.redirect(new URL('/', req.url));
+	}
 }
 
-// ✅ Aplicar middleware en rutas relevantes
+// ✅ Apply middleware to relevant routes
 export const config = {
-	matcher: ['/dashboard', '/', '/register']
+	matcher: ['/dashboard', '/clients', '/settings', '/orders', '/users', '/permissions']
 };

@@ -25,7 +25,7 @@ const AuthenticatedLayout = ({ children }) => {
 				{!hideSidebarRoutes.includes(pathname) && <Navbar />}
 
 				{/* ✅ Main Content (Fills Remaining Space) */}
-				<main className="flex-1 p-6 bg-gray-100 overflow-auto">{children}</main>
+				<main>{children}</main>
 			</div>
 		</div>
 	);
