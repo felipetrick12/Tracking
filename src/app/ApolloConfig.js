@@ -1,29 +1,39 @@
 'use client';
-// ^ this file needs the "use client" pragma
 
 import { HttpLink } from '@apollo/client';
 import { ApolloClient, ApolloNextAppProvider, InMemoryCache } from '@apollo/experimental-nextjs-app-support';
+import { parseCookies } from 'nookies';
 
-// have a function to create a client for you
+// ✅ Function to extract token from cookies (Works in both client & server)
+const getClientToken = () => {
+	const cookies = parseCookies();
+
+	console.log('cookies', cookies);
+
+	return cookies['token'] || '';
+};
+
+// ✅ Function to create Apollo Client
 function makeClient() {
-	// Validate if the token is valid and not expired
+	const token = getClientToken(); // 🔥 Fetch token correctly
+
+	console.log('Token in makeClient:', token); // Debugging
+
 	const httpLink = new HttpLink({
 		uri: 'http://localhost:4000/graphql',
 		credentials: 'include',
 		headers: {
-			authorization: typeof window !== 'undefined' ? `Bearer ${localStorage.getItem('token')}` : ''
+			Authorization: token ? `Bearer ${token}` : ''
 		}
 	});
 
-	// use the `ApolloClient` from "@apollo/experimental-nextjs-app-support"
 	return new ApolloClient({
-		// use the `InMemoryCache` from "@apollo/experimental-nextjs-app-support"
 		cache: new InMemoryCache(),
 		link: httpLink
 	});
 }
 
-// you need to create a component to wrap your app in
+// ✅ Apollo Provider Wrapper
 export function ApolloWrapper({ children }) {
 	return <ApolloNextAppProvider makeClient={makeClient}>{children}</ApolloNextAppProvider>;
 }

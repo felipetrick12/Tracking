@@ -1,11 +1,10 @@
 'use client';
-import { useAuth } from '@/context/AuthProvider';
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import { ArrowRightCircleIcon, Cog6ToothIcon, UserIcon } from '@heroicons/react/24/outline';
 import { Fragment } from 'react';
 
 const UserDropdown = () => {
-	const { logout, auth } = useAuth();
+	// const { logout, auth } = useAuth();
 
 	return (
 		<Menu as="div" className="relative inline-block text-left">
@@ -13,7 +12,7 @@ const UserDropdown = () => {
 				<MenuButton className="flex items-center gap-2 p-2 bg-white border rounded-md shadow-md hover:bg-gray-100 focus:outline-none">
 					<img src="https://i.pravatar.cc/60" alt="User Profile" className="w-10 h-10 rounded-full" />
 					<span className="text-sm font-medium text-gray-900 hidden md:block">
-						{auth?.user?.name || 'User'}
+						{/* {auth?.user?.name || 'User'} */}
 					</span>
 				</MenuButton>
 			</div>

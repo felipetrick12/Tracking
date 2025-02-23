@@ -1,16 +1,49 @@
 'use client';
 
-import { ROUTES } from '@/constants/routes';
 import Link from 'next/link';
 import { parseCookies } from 'nookies';
 import { useEffect, useState } from 'react';
+
+// ✅ Import icons
+import {
+	BuildingOfficeIcon,
+	ClipboardIcon,
+	Cog6ToothIcon,
+	HomeIcon,
+	ShieldCheckIcon,
+	UserGroupIcon,
+	UserIcon
+} from '@heroicons/react/24/outline';
+
+const ROUTES = [
+	{
+		path: '/dashboard',
+		label: 'Dashboard',
+		icon: <HomeIcon className="w-5 h-5" />,
+		roles: ['admin', 'designer', 'user']
+	},
+	{ path: '/clients', label: 'Clients', icon: <UserGroupIcon className="w-5 h-5" />, roles: ['admin'] },
+	{ path: '/settings', label: 'Settings', icon: <Cog6ToothIcon className="w-5 h-5" />, roles: ['admin', 'designer'] },
+	{ path: '/orders', label: 'Orders', icon: <ClipboardIcon className="w-5 h-5" />, roles: ['designer'] },
+	{ path: '/users', label: 'Manage Users', icon: <UserIcon className="w-5 h-5" />, roles: ['admin'] },
+	{
+		path: '/organizations',
+		label: 'Organizations',
+		icon: <BuildingOfficeIcon className="w-5 h-5" />,
+		roles: ['admin']
+	},
+	{ path: '/permissions', label: 'Permissions', icon: <ShieldCheckIcon className="w-5 h-5" />, roles: ['admin'] }
+];
 
 const SideBar = () => {
 	const [allowedRoutes, setAllowedRoutes] = useState([]);
 
 	useEffect(() => {
-		// 📌 Read allowed routes from cookies
+		// ✅ Fetch allowed routes from cookies
 		const cookies = parseCookies();
+		console.log('🍪 Cookies:', cookies);
+
+		// ✅ Parse allowed routes (if exists)
 		const storedRoutes = cookies.allowedRoutes ? JSON.parse(cookies.allowedRoutes) : [];
 
 		setAllowedRoutes(storedRoutes);

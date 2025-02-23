@@ -5,12 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 
-import { useAuth } from '@/context/AuthProvider';
 import { LOGIN_MUTATION } from '@/graphql/mutations';
 import Image from 'next/image';
 
 const LoginPage = () => {
-	const { auth, setAuth } = useAuth(); // ✅ Verificar si el usuario ya está autenticado
 	const router = useRouter();
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
@@ -24,7 +22,7 @@ const LoginPage = () => {
 				toast.success('✅ Login Successful! Redirecting...');
 
 				// ✅ Guardar usuario en el estado global (ya no manejamos token manualmente)
-				setAuth({ user: data.login.user });
+				// setAuth({ user: data.login.user });
 
 				// 🚀 Redirigir al dashboard
 				router.push('/dashboard');

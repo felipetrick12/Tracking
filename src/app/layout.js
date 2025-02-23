@@ -1,5 +1,4 @@
 import AuthenticatedLayout from '@/components/AuthenticatedLayout';
-import { AuthProvider } from '@/context/AuthProvider';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ApolloWrapper } from './ApolloConfig'; // ✅ Apollo First
 import './globals.css';
@@ -27,10 +26,8 @@ export default function RootLayout({ children }) {
 				{/* ✅ Apollo First */}
 				<ApolloWrapper>
 					{/* ✅ Then AuthProvider (Client) */}
-					<AuthProvider>
-						{/* ✅ Move `useAuth()` to a separate Client Component */}
-						<AuthenticatedLayout>{children}</AuthenticatedLayout>
-					</AuthProvider>
+					{/* ✅ Move `useAuth()` to a separate Client Component */}
+					<AuthenticatedLayout>{children}</AuthenticatedLayout>
 				</ApolloWrapper>
 			</body>
 		</html>

@@ -3,20 +3,20 @@ import { executeGraphQL } from '@/lib/apolloServer';
 import { NextResponse } from 'next/server';
 
 const roleProtectedRoutes = {
-	admin: ['/dashboard', '/clients', '/settings', '/users', '/permissions'],
+	admin: ['/dashboard', '/clients', '/users', '/organizations', '/permissions'],
 	designer: ['/dashboard', '/orders', '/settings'],
 	user: ['/dashboard']
 };
 
-const publicRoutes = ['/', '/register'];
+const publicRoutes = ['/', '/register']; // Public pages
 
 export default async function middleware(req) {
 	const token = req.cookies.get('token')?.value || null;
 	console.log('🔍 Checking route:', req.nextUrl.pathname);
 	console.log('🔑 Token:', token ? 'Exists' : 'Not Found');
 
-	// ✅ Allow public routes without authentication
-	if (publicRoutes.includes(req.nextUrl.pathname)) {
+	// ✅ Allow public routes if user is NOT logged in
+	if (!token && publicRoutes.includes(req.nextUrl.pathname)) {
 		console.log('✅ Public route, access granted:', req.nextUrl.pathname);
 		return NextResponse.next();
 	}
@@ -24,7 +24,10 @@ export default async function middleware(req) {
 	// 🚀 If no token and trying to access a protected route, redirect to login
 	if (!token) {
 		console.log('❌ No token, redirecting to home');
-		return NextResponse.redirect(new URL('/', req.url));
+		const response = NextResponse.redirect(new URL('/', req.url));
+		response.cookies.delete('token'); // 🔥 Remove old token
+		response.cookies.delete('allowedRoutes'); // 🔥 Remove old routes
+		return response;
 	}
 
 	try {
@@ -34,7 +37,8 @@ export default async function middleware(req) {
 		if (!data?.me) {
 			console.log('❌ User not found, clearing token and redirecting to login');
 			const response = NextResponse.redirect(new URL('/', req.url));
-			response.cookies.delete('token'); // 🔥 Remove invalid token
+			response.cookies.delete('token');
+			response.cookies.delete('allowedRoutes');
 			return response;
 		}
 
@@ -43,9 +47,27 @@ export default async function middleware(req) {
 		// 🚀 Get allowed routes based on role
 		const allowedRoutes = roleProtectedRoutes[role] || [];
 
-		// ✅ Store allowed routes in a cookie (JSON stringified)
+		// ✅ Store token for client-side access (Apollo Client)
 		const response = NextResponse.next();
-		response.cookies.set('allowedRoutes', JSON.stringify(allowedRoutes), { path: '/' });
+		response.cookies.set('token', token, {
+			httpOnly: false, // ✅ Allow client-side access
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'lax',
+			path: '/'
+		});
+
+		// ✅ Store allowed routes in a cookie (JSON stringified)
+		response.cookies.set('allowedRoutes', JSON.stringify(allowedRoutes), {
+			path: '/',
+			httpOnly: false, // ✅ Allow client-side access
+			sameSite: 'lax'
+		});
+
+		// ✅ Redirect users from login page if already authenticated
+		if (req.nextUrl.pathname === '/') {
+			console.log('🔄 User is authenticated but on login page. Redirecting to dashboard.');
+			return NextResponse.redirect(new URL('/dashboard', req.url));
+		}
 
 		console.log('✅ Allowed routes stored in cookie:', allowedRoutes);
 		return response;
@@ -57,5 +79,5 @@ export default async function middleware(req) {
 
 // ✅ Apply middleware to relevant routes
 export const config = {
-	matcher: ['/dashboard', '/clients', '/settings', '/orders', '/users', '/permissions']
+	matcher: ['/dashboard', '/clients', '/users', '/organizations', '/orders', '/settings', '/permissions', '/']
 };
