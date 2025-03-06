@@ -7,6 +7,10 @@ export const GET_ME = gql`
 			name
 			email
 			role
+			activeOrganization {
+				id
+				name
+			}
 		}
 	}
 `;

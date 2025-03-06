@@ -1,12 +1,15 @@
 'use client';
 
 import { CREATE_USER } from '@/graphql/mutations/user';
+import { GET_ME } from '@/graphql/queries/auth';
 import { GET_ORGANIZATIONS } from '@/graphql/queries/organization';
-import { GET_DESIGNERS, GET_ROLES } from '@/graphql/queries/user';
+import { GET_DESIGNERS, GET_ROLES, GET_USERS_BY_ROLE } from '@/graphql/queries/user';
 import { useMutation, useQuery } from '@apollo/client';
 import { useState } from 'react';
 
 const AddUserForm = ({ onUserCreated }) => {
+	const { data: userData } = useQuery(GET_ME); // Obtiene el usuario autenticado
+
 	const [formData, setFormData] = useState({
 		name: '',
 		email: '',
@@ -20,8 +23,8 @@ const AddUserForm = ({ onUserCreated }) => {
 	const [createUser] = useMutation(CREATE_USER);
 	const { data: rolesData } = useQuery(GET_ROLES);
 	const { data: orgsData } = useQuery(GET_ORGANIZATIONS);
-	const { data: designersData, refetch: refetchDesigners } = useQuery(GET_DESIGNERS, {
-		variables: { role: 'designer' }
+	const { data: designersData, refetch: refetchDesigners } = useQuery(GET_USERS_BY_ROLE, {
+		variables: { role: 'designer', organizationId: userData?.me?.activeOrganization?.id }
 	});
 
 	// ✅ Handle input change

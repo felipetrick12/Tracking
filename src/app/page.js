@@ -1,12 +1,12 @@
 'use client';
-import { useMutation } from '@apollo/client';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import toast, { Toaster } from 'react-hot-toast';
 
 import { LOGIN_MUTATION } from '@/graphql/mutations';
+import { GET_ME } from '@/graphql/queries/auth'; // ✅ Import GET_ME to refresh authentication state
+import { useApolloClient, useMutation } from '@apollo/client';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 
 const LoginPage = () => {
 	const router = useRouter();
@@ -15,28 +15,40 @@ const LoginPage = () => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [loginLoading, setLoginLoading] = useState(false);
 
-	const [login, { loading }] = useMutation(LOGIN_MUTATION, {
-		credentials: 'include', // 🔥 Enviar cookies con la solicitud
-		onCompleted: (data) => {
+	const client = useApolloClient();
+
+	const [login] = useMutation(LOGIN_MUTATION, {
+		credentials: 'include',
+		onCompleted: async (data) => {
 			if (data?.login?.user) {
 				toast.success('✅ Login Successful! Redirecting...');
 
-				// ✅ Guardar usuario en el estado global (ya no manejamos token manualmente)
-				// setAuth({ user: data.login.user });
-
-				// 🚀 Redirigir al dashboard
+				await client.resetStore(); // 🔥 Resetea caché y vuelve a cargar `GET_ME`
 				router.push('/dashboard');
 			}
-		},
-		onError: (error) => {
-			toast.error('❌ Login Failed: Invalid credentials.');
-			console.log('Login Error:', error.message);
 		}
 	});
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		await login({ variables: { email, password } });
+		setLoginLoading(true);
+
+		try {
+			const { data } = await login({ variables: { email, password } });
+
+			if (data?.login?.user) {
+				toast.success('✅ Login Successful! Redirecting...');
+
+				// 🚀 Redirect to a protected route to trigger the middleware
+				router.push('/dashboard');
+				router.refresh(); // 🔥 Ensure the middleware detects the new session
+			}
+		} catch (error) {
+			toast.error('❌ Login Failed: Invalid credentials.');
+			console.error('Login Error:', error.message);
+		}
+
+		setLoginLoading(false);
 	};
 
 	return (
@@ -44,13 +56,7 @@ const LoginPage = () => {
 			<Toaster position="top-right" />
 
 			<div className="sm:mx-auto sm:w-full sm:max-w-sm">
-				<Image
-					className="mx-auto"
-					src={'/assets/Images/Vector.png'}
-					alt="Your Company"
-					width={200}
-					height={20}
-				/>
+				<Image className="mx-auto" src={'/assets/Images/logo.png'} alt="Your Company" width={200} height={20} />
 				<h2 className="mt-5 text-center text-[25px] font-bold  text-sm text-primary font-bold">
 					Pinnacle Management
 				</h2>
@@ -58,7 +64,7 @@ const LoginPage = () => {
 
 			<div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
 				<form className="space-y-6" onSubmit={handleSubmit}>
-					{/* ✅ Campo de Email */}
+					{/* ✅ Email Field */}
 					<div>
 						<label htmlFor="email" className="block text-sm text-[16px] text-primary font-bold">
 							Email
@@ -77,7 +83,7 @@ const LoginPage = () => {
 						</div>
 					</div>
 
-					{/* ✅ Campo de Password */}
+					{/* ✅ Password Field */}
 					<div>
 						<label htmlFor="password" className="block text-sm text-[16px] text-primary font-bold">
 							Password
@@ -98,16 +104,12 @@ const LoginPage = () => {
 								className="absolute inset-y-0 right-3 flex items-center"
 								onClick={() => setShowPassword((prev) => !prev)}
 							>
-								{showPassword ? (
-									<EyeIcon className="w-5 h-5 text-gray-500" />
-								) : (
-									<EyeSlashIcon className="w-5 h-5 text-gray-500" />
-								)}
+								{showPassword ? '🙈' : '👁️'}
 							</button>
 						</div>
 					</div>
 
-					{/* ✅ Botón de Login */}
+					{/* ✅ Login Button */}
 					<div>
 						<button
 							type="submit"
