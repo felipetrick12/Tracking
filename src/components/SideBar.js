@@ -46,7 +46,7 @@ const SideBar = () => {
 	}, []);
 
 	return (
-		<aside className="w-60 h-screen fixed top-0 left-0 bg-gray-100 text-black flex flex-col  border-r border-gray-300">
+		<aside className="w-60 h-screen fixed top-0 left-0 bg-gray-100 text-black flex flex-col  border-10">
 			<div className="flex items-center gap-3 mb-6 border-b-2 border-gray-200 p-4">
 				<Image
 					src={'/assets/Images/logo.png'}
@@ -58,7 +58,7 @@ const SideBar = () => {
 				<h1 className="text-xl font-bold">Pinnacle</h1>
 			</div>
 
-			<nav className="space-y-2 m-4 mt-0	">
+			<nav className="space-y-2 m-4 mt-0">
 				{ROUTES.filter((route) => allowedRoutes.includes(route.path)).map((route) => {
 					const isActive = pathname === route.path;
 					return (

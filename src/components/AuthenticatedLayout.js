@@ -1,31 +1,26 @@
 'use client';
 
 import SideBar from '@/components/SideBar';
-import { usePathname } from 'next/navigation';
-import Navbar from './Navbar';
+import { usePathname, useRouter } from 'next/navigation';
 
 const AuthenticatedLayout = ({ children }) => {
 	const pathname = usePathname();
 
-	// 🚀  Hide sidebar for those routes
+	// 🚀 Hide routes from sidebar
 	const hideSidebarRoutes = ['/', '/signup'];
 
 	return (
-		<div className="flex h-screen">
-			{/* ✅ Sidebar (Always Left, Full Height) */}
+		<div className="flex h-screen bg-gray-100">
+			{/* ✅ Sidebar Visibility Based on Allowed Routes */}
 			{!hideSidebarRoutes.includes(pathname) && (
 				<div className="w-60">
 					<SideBar />
 				</div>
 			)}
 
-			{/* ✅ Right Section (Navbar + Main Content) */}
-			<div className="flex flex-col flex-1">
-				{/* ✅ Navbar (Full Width after Sidebar) */}
-				{!hideSidebarRoutes.includes(pathname) && <Navbar />}
-
-				{/* ✅ Main Content (Fills Remaining Space) */}
-				<main>{children}</main>
+			{/* ✅ Main Layout */}
+			<div className="flex flex-col flex-1 m-2">
+				<main className="rounded-md bg-white p-8">{children}</main>
 			</div>
 		</div>
 	);

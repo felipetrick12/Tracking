@@ -38,6 +38,7 @@ export default async function middleware(req) {
 			console.log('❌ User not found, clearing token and redirecting to login');
 			const response = NextResponse.redirect(new URL('/', req.url));
 			response.cookies.delete('token');
+			response.cookies.delete('userData');
 			response.cookies.delete('allowedRoutes');
 			return response;
 		}
@@ -54,6 +55,13 @@ export default async function middleware(req) {
 			secure: process.env.NODE_ENV === 'production',
 			sameSite: 'lax',
 			path: '/'
+		});
+
+		// ✅ Store user data in a cookie (JSON stringified)
+		response.cookies.set('userData', JSON.stringify(data.me), {
+			path: '/',
+			httpOnly: false, // ✅ Allow client-side access
+			sameSite: 'lax'
 		});
 
 		// ✅ Store allowed routes in a cookie (JSON stringified)

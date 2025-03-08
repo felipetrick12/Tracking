@@ -1,7 +1,6 @@
 'use client';
 
 import { LOGIN_MUTATION } from '@/graphql/mutations';
-import { GET_ME } from '@/graphql/queries/auth'; // ✅ Import GET_ME to refresh authentication state
 import { useApolloClient, useMutation } from '@apollo/client';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -57,9 +56,7 @@ const LoginPage = () => {
 
 			<div className="sm:mx-auto sm:w-full sm:max-w-sm">
 				<Image className="mx-auto" src={'/assets/Images/logo.png'} alt="Your Company" width={200} height={20} />
-				<h2 className="mt-5 text-center text-[25px] font-bold  text-sm text-primary font-bold">
-					Pinnacle Management
-				</h2>
+				<h2 className="mt-5 text-center text-2xl font-bold text-primary font-bold">Pinnacle Management</h2>
 			</div>
 
 			<div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">

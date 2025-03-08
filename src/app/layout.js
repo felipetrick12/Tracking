@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/components/AuthenticatedLayout';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { ApolloWrapper } from './ApolloConfig'; // ✅ Apollo First
+import { ApolloWrapper } from './ApolloWrapper';
 import './globals.css';
 
 const geistSans = Geist({
@@ -24,9 +24,9 @@ export default function RootLayout({ children }) {
 		<html lang="en">
 			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
 				{/* ✅ Apollo First */}
+				{/* ✅ Then AuthProvider (Client) */}
+				{/* ✅ Move `useAuth()` to a separate Client Component */}
 				<ApolloWrapper>
-					{/* ✅ Then AuthProvider (Client) */}
-					{/* ✅ Move `useAuth()` to a separate Client Component */}
 					<AuthenticatedLayout>{children}</AuthenticatedLayout>
 				</ApolloWrapper>
 			</body>

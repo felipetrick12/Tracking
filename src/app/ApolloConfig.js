@@ -1,23 +1,28 @@
-'use client';
-
-import { HttpLink } from '@apollo/client';
-import { ApolloClient, ApolloNextAppProvider, InMemoryCache } from '@apollo/experimental-nextjs-app-support';
+import { ApolloClient, HttpLink, InMemoryCache, makeVar } from '@apollo/client';
 import { parseCookies } from 'nookies';
 
-// ✅ Function to extract token from cookies (Works in both client & server)
+export const userVar = makeVar(null); // ✅ Variable reactiva global
+
 const getClientToken = () => {
 	const cookies = parseCookies();
-
-	console.log('cookies', cookies);
-
 	return cookies['token'] || '';
 };
 
-// ✅ Function to create Apollo Client
-function makeClient() {
-	const token = getClientToken(); // 🔥 Fetch token correctly
+const getUserFromCookies = () => {
+	const cookies = parseCookies();
+	return cookies['userData'] ? JSON.parse(cookies['userData']) : null;
+};
 
-	console.log('Token in makeClient:', token); // Debugging
+export function makeClient() {
+	const token = getClientToken();
+	const userData = getUserFromCookies();
+
+	console.log('🔑 Token:', token);
+	console.log('👤 User:', userData);
+
+	if (userData) {
+		userVar(userData); // ✅ Save user in global reactive variable
+	}
 
 	const httpLink = new HttpLink({
 		uri: 'http://localhost:4000/graphql',
@@ -31,9 +36,4 @@ function makeClient() {
 		cache: new InMemoryCache(),
 		link: httpLink
 	});
-}
-
-// ✅ Apollo Provider Wrapper
-export function ApolloWrapper({ children }) {
-	return <ApolloNextAppProvider makeClient={makeClient}>{children}</ApolloNextAppProvider>;
 }
