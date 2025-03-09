@@ -8,6 +8,7 @@ export const CREATE_USER = gql`
 		$role: String!
 		$activeOrganization: ID
 		$assignedTo: ID
+		$photoUrl: String # ✅ Accept image as Base64
 	) {
 		createUser(
 			name: $name
@@ -16,11 +17,13 @@ export const CREATE_USER = gql`
 			role: $role
 			activeOrganization: $activeOrganization
 			assignedTo: $assignedTo
+			photoUrl: $photoUrl # ✅ Send image
 		) {
 			id
 			name
 			email
 			role
+			photoUrl # ✅ Get uploaded image URL
 			activeOrganization {
 				id
 				name
@@ -33,19 +36,27 @@ export const CREATE_USER = gql`
 	}
 `;
 
-// ✅ Update User
 export const UPDATE_USER = gql`
-	mutation UpdateUser($id: ID!, $name: String, $role: String, $assignedTo: ID, $activeOrganization: ID) {
+	mutation UpdateUser(
+		$id: ID!
+		$name: String
+		$role: String
+		$assignedTo: ID
+		$activeOrganization: ID
+		$photoUrl: String # ✅ Allow updating profile image
+	) {
 		updateUser(
 			id: $id
 			name: $name
 			role: $role
 			assignedTo: $assignedTo
 			activeOrganization: $activeOrganization
+			photoUrl: $photoUrl # ✅ Send new image URL
 		) {
 			id
 			name
 			role
+			photoUrl # ✅ Return updated image URL
 			assignedTo {
 				id
 				name

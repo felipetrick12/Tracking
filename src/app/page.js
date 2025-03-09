@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
+import { userVar } from './ApolloConfig';
 
 const LoginPage = () => {
 	const router = useRouter();
@@ -21,7 +22,7 @@ const LoginPage = () => {
 		onCompleted: async (data) => {
 			if (data?.login?.user) {
 				toast.success('✅ Login Successful! Redirecting...');
-
+				userVar(data.login.user);
 				await client.resetStore(); // 🔥 Resetea caché y vuelve a cargar `GET_ME`
 				router.push('/dashboard');
 			}
