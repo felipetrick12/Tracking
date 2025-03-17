@@ -2,14 +2,18 @@
 
 import { CREATE_USER, UPDATE_USER } from '@/graphql/mutations/user';
 import { GET_ORGANIZATIONS } from '@/graphql/queries/organization';
-import { GET_ROLES } from '@/graphql/queries/user';
+import { GET_ROLES, GET_USERS } from '@/graphql/queries/user';
 import { useMutation, useQuery } from '@apollo/client';
 import { UserIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const AddUserForm = ({ user = null, onUserUpdated, onUserCreated, open, setOpen }) => {
-	const { data: rolesData } = useQuery(GET_ROLES);
-	const { data: orgsData } = useQuery(GET_ORGANIZATIONS);
+const AddUserForm = ({ children, user = null, onUserChange, open, setOpen }) => {
+	const { data: rolesData } = useQuery(GET_ROLES, { pollInterval: 10000, skip: !open });
+	const { data: orgsData } = useQuery(GET_ORGANIZATIONS, { pollInterval: 10000, skip: !open });
+	const { data: clients } = useQuery(GET_USERS, { pollInterval: 10000, skip: !open });
+
 	const [createUser] = useMutation(CREATE_USER);
 	const [updateUser] = useMutation(UPDATE_USER);
 
@@ -19,12 +23,12 @@ const AddUserForm = ({ user = null, onUserUpdated, onUserCreated, open, setOpen 
 		password: '',
 		role: '',
 		activeOrganization: '',
+		assignedTo: '',
 		photo: null
 	});
 	const [loading, setLoading] = useState(false);
 	const [previewImage, setPreviewImage] = useState(null);
 
-	// ✅ Handle Submit
 	useEffect(() => {
 		if (user) {
 			setFormData({
@@ -33,6 +37,7 @@ const AddUserForm = ({ user = null, onUserUpdated, onUserCreated, open, setOpen 
 				password: '',
 				role: user.role || '',
 				activeOrganization: user.organizations?.[0]?.id || '',
+				assignedTo: user.assignedTo?.id || '',
 				photo: null
 			});
 			setPreviewImage(user.photoUrl || null);
@@ -45,15 +50,6 @@ const AddUserForm = ({ user = null, onUserUpdated, onUserCreated, open, setOpen 
 	};
 
 	const handleCancel = () => {
-		setFormData({
-			name: '',
-			email: '',
-			password: '',
-			role: '',
-			activeOrganization: '',
-			photo: null
-		});
-		setPreviewImage(null);
 		setOpen(false);
 	};
 
@@ -71,23 +67,28 @@ const AddUserForm = ({ user = null, onUserUpdated, onUserCreated, open, setOpen 
 			}
 
 			const variables = {
-				...formData,
-				photoUrl: base64Image || user?.photoUrl || null
+				...(formData.name !== user?.name && { name: formData.name }),
+				...(formData.role !== user?.role && { role: formData.role }),
+				...(formData.assignedTo !== user?.assignedTo?.id && { assignedTo: formData.assignedTo }),
+				...(formData.activeOrganization !== user?.organizations?.[0]?.id && {
+					activeOrganization: formData.activeOrganization
+				}),
+				...(base64Image && { photoUrl: base64Image })
 			};
 
 			if (user) {
 				await updateUser({ variables: { id: user.id, ...variables } });
-				onUserUpdated();
-				alert('✅ User updated successfully!');
+				onUserChange();
+				toast.success('✅ User updated successfully!');
 			} else {
-				await createUser({ variables });
-				onUserCreated();
-				alert('✅ User created successfully!');
+				await createUser({ variables: { ...formData, photoUrl: base64Image } });
+				onUserChange();
+				toast.success('✅ User created successfully!');
 			}
 
 			setOpen(false);
 		} catch (error) {
-			alert(`❌ Error: ${error.message}`);
+			toast.error(`❌ Error: ${error.message}`);
 		} finally {
 			setLoading(false);
 		}
@@ -95,23 +96,23 @@ const AddUserForm = ({ user = null, onUserUpdated, onUserCreated, open, setOpen 
 
 	return (
 		<>
-			{/* 🔹 Open Modal Button */}
-			<button onClick={() => setOpen(true)} className="bg-blue-600 text-white px-4 py-2 rounded-md">
-				Create User
-			</button>
+			{children ? (
+				children
+			) : (
+				<button className="bg-blue-500 text-white px-3 py-1 rounded" onClick={() => setOpen(true)}>
+					Add User
+				</button>
+			)}
 
-			{/* 🔹 Modal */}
 			{open && (
 				<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-					<div className="bg-white p-6 rounded-lg shadow-lg w-[930px]">
-						<h2 className="text-xl font-bold mb-4 text-gray-800">Create User</h2>
+					<div className="bg-white p-10 rounded-lg shadow-lg w-[930px]">
+						<h2 className="text-xl font-bold mb-4 text-gray-800">{user ? 'Edit User' : 'Create User'}</h2>
 
-						<form onSubmit={handleSubmit} className="space-y-5">
-							{/* 📌 Layout en 2 columnas */}
+						<form onSubmit={handleSubmit} className="flex flex-col gap-6">
 							<div className="flex gap-6">
-								{/* 🔹 Profile Image Upload (Izquierda) */}
-								<div className="w-1/3 flex flex-col items-center">
-									<div className="relative w-44 h-44 flex flex-col  items-center justify-center cursor-pointer rounded border border-gray-300">
+								<div className="w-1/4 items-start justify-start">
+									<div className="relative w-44 h-44 flex flex-col items-center justify-center cursor-pointer rounded border border-gray-300">
 										{previewImage ? (
 											<img
 												src={previewImage}
@@ -123,7 +124,7 @@ const AddUserForm = ({ user = null, onUserUpdated, onUserCreated, open, setOpen 
 										)}
 										<input
 											type="file"
-											className="absolute inset-0 opacity-0 cursor-pointer "
+											className="absolute inset-0 opacity-0 cursor-pointer"
 											accept="image/*"
 											onChange={(e) => {
 												const file = e.target.files[0];
@@ -134,15 +135,11 @@ const AddUserForm = ({ user = null, onUserUpdated, onUserCreated, open, setOpen 
 											}}
 										/>
 									</div>
-
-									<p className="text-gray-500 text-sm mt-2">Max: 2MB</p>
 								</div>
-
-								{/* 🔹 User Form Fields (Derecha) */}
-								<div className="w-2/3 space-y-4">
+								<div className="w-3/4 space-y-4">
 									{/* 🟡 First Row */}
-									<div className="flex gap-4">
-										<div className="flex flex-col gap-2 w-full">
+									<div className="flex w-full gap-4 flex-wrap">
+										<div className="flex flex-col gap-2 w-2/2">
 											<label className="text-gray-700 font-medium text-sm">Full Name</label>
 											<input
 												type="text"
@@ -155,7 +152,7 @@ const AddUserForm = ({ user = null, onUserUpdated, onUserCreated, open, setOpen 
 											/>
 										</div>
 
-										<div className="flex flex-col gap-2 w-full">
+										<div className="flex flex-col gap-2 w-2/2">
 											<label className="text-gray-700 font-medium text-sm">Email</label>
 											<input
 												type="email"
@@ -221,23 +218,20 @@ const AddUserForm = ({ user = null, onUserUpdated, onUserCreated, open, setOpen 
 											</select>
 										</div>
 									</div>
-
-									{/* 🟡 Third Row */}
 								</div>
 							</div>
 
-							{/* 📌 Footer Buttons */}
-							<div className="flex justify-end space-x-3 mt-6">
+							<div className="flex justify-end gap-4">
 								<button
 									type="button"
-									onClick={() => handleCancel()}
-									className="bg-gray-600 text-white px-6 py-2 rounded-md"
+									onClick={handleCancel}
+									className="bg-gray-500 text-white px-6 py-2 rounded-md"
 								>
 									Cancel
 								</button>
 								<button
 									type="submit"
-									className="bg-yellow-900 text-white px-6 py-2 rounded-md transition-all hover:bg-yellow-700"
+									className="bg-black text-white px-6 py-2 rounded-md"
 									disabled={loading}
 								>
 									{loading ? 'Saving...' : 'Save'}

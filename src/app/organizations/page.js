@@ -1,6 +1,6 @@
 'use client';
 
-import AddOrganizationForm from '@/components/AddOrganizationForm';
+import AddOrganizationForm from '@/components/molecules/AddOrganizationForm';
 import { gql, useQuery } from '@apollo/client';
 
 // ✅ GraphQL Query to Get Organizations

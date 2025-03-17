@@ -1,7 +1,7 @@
 'use client';
 
-import SideBar from '@/components/SideBar';
-import { usePathname, useRouter } from 'next/navigation';
+import SideBar from '@/components/atoms/Sidebar';
+import { usePathname } from 'next/navigation';
 
 const AuthenticatedLayout = ({ children }) => {
 	const pathname = usePathname();

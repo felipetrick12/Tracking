@@ -5,7 +5,7 @@ import { GET_ME } from '@/graphql/queries/auth';
 import { useMutation, useQuery } from '@apollo/client';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import UserDropdown from './UserDropdown';
+import UserDropdown from '../UserDropdown';
 
 const Navbar = () => {
 	const router = useRouter();

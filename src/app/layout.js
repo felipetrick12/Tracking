@@ -1,4 +1,4 @@
-import AuthenticatedLayout from '@/components/AuthenticatedLayout';
+import AuthenticatedLayout from '@/components/atoms/AuthenticatedLayout';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ApolloWrapper } from './ApolloWrapper';
 import './globals.css';

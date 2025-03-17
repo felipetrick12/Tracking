@@ -1,10 +1,8 @@
 'use client';
 
-import AddUserForm from '@/components/AddUserForm';
-import { UPDATE_USER } from '@/graphql/mutations/user';
-import { GET_ORGANIZATIONS } from '@/graphql/queries/organization';
-import { GET_ROLES, GET_USERS } from '@/graphql/queries/user';
-import { useMutation, useQuery } from '@apollo/client';
+import AddUserForm from '@/components/molecules/AddUserForm';
+import { GET_USERS } from '@/graphql/queries/user';
+import { useQuery } from '@apollo/client';
 import { UserIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
@@ -24,7 +22,15 @@ const UsersPage = () => {
 			<h1 className="text-2xl font-bold mb-4">Users</h1>
 
 			<div className="flex justify-end items-center">
-				<AddUserForm open={modalOpen} setOpen={setModalOpen} user={editingUser} />
+				<AddUserForm
+					open={modalOpen}
+					setOpen={setModalOpen}
+					user={editingUser}
+					onUserChange={() => {
+						refetch();
+						setEditingUser(null);
+					}}
+				/>
 			</div>
 
 			<table className="mt-4 min-w-full text-left text-sm text-gray-500 border-collapse">

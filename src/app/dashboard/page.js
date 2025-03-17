@@ -1,12 +1,8 @@
 'use client';
 
 import { UserDropdown } from '@/components';
-import CardMetrics from '@/components/CardMetrics';
-import { LOGOUT } from '@/graphql/mutations/auth';
-import { useMutation, useReactiveVar } from '@apollo/client';
-import { Menu } from '@headlessui/react';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image';
+import { AdminDashboard, ClientDashboard } from '@/components/molecules';
+import { useReactiveVar } from '@apollo/client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { userVar } from '../ApolloConfig';
@@ -18,20 +14,10 @@ const getGreeting = () => {
 	return 'Good evening';
 };
 
-const METRICS = [
-	{ label: 'Total revenue', value: '$2.6M', change: '+4.5%', changeType: 'positive' },
-	{ label: 'Average order value', value: '$455', change: '-0.5%', changeType: 'negative' },
-	{ label: 'Tickets sold', value: '5,888', change: '+4.5%', changeType: 'positive' },
-	{ label: 'Pageviews', value: '823,067', change: '+21.2%', changeType: 'positive' }
-];
-
-const Home = () => {
+const Dashboard = () => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
-
 	const [greeting, setGreeting] = useState(getGreeting());
-
-	const [logout] = useMutation(LOGOUT);
 
 	useEffect(() => {
 		const timer = setInterval(() => {
@@ -40,26 +26,15 @@ const Home = () => {
 		return () => clearInterval(timer);
 	}, []);
 
-	// ✅ Función para cerrar sesión
-	const handleLogout = async () => {
-		try {
-			await logout();
+	console.log('User in Dashboard:', user);
 
-			// 🔥 Manually clear cookies in the browser
-			document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; max-age=0; path=/;';
-			document.cookie = 'allowedRoutes=; expires=Thu, 01 Jan 1970 00:00:00 UTC; max-age=0; path=/;';
-			document.cookie = 'userData=; expires=Thu, 01 Jan 1970 00:00:00 UTC; max-age=0; path=/;';
-
-			// 🚀 Redirect to home to trigger middleware
-			router.push('/');
-			router.refresh(); // 🔥 Ensure middleware runs and clears allowedRoutes
-			userVar(null);
-		} catch (err) {
-			console.error('Logout error:', err);
-		}
+	// 🔥 Renderizar dashboard según el rol del usuario
+	const renderDashboard = () => {
+		if (!user) return <p>Loading...</p>;
+		if (user.role === 'admin') return <AdminDashboard />;
+		if (user.role === 'client') return <ClientDashboard />;
+		return <p>Unauthorized</p>;
 	};
-
-	console.log('user udashboard', user);
 
 	return (
 		<div className="p-6">
@@ -68,15 +43,13 @@ const Home = () => {
 				<h1 className="text-2xl font-bold">
 					{greeting} {user?.name ? `, ${user.name}` : ''}
 				</h1>
-				<UserDropdown user={user} onLogout={handleLogout} />
+				<UserDropdown user={user} />
 			</div>
 
-			{/* Metrics Section */}
-			<CardMetrics metrics={METRICS} />
-
-			{/* Recent Orders Table */}
+			{/* Render dinámico del Dashboard */}
+			{renderDashboard()}
 		</div>
 	);
 };
 
-export default Home;
+export default Dashboard;
