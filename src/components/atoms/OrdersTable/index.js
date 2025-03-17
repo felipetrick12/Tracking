@@ -1,67 +1,82 @@
-// import UploadToS3 from '@/components/UploadToS3';
-// import { GET_ORDERS, UPDATE_ORDER } from '@/graphql/queries/orders';
-import { useMutation, useQuery } from '@apollo/client';
+import { GET_ALL_ORDERS } from '@/graphql/queries/order';
+import { useQuery } from '@apollo/client';
 import { useState } from 'react';
+import OrderForm from '../OrderForm';
 
-const OrdersTable = ({ userRole }) => {
-	const { data, loading, error } = useQuery(GET_ORDERS);
-	const [updateOrder] = useMutation(UPDATE_ORDER);
-	const [selectedStatus, setSelectedStatus] = useState({});
+const OrdersTable = ({ user }) => {
+	const { data, loading, error, refetch } = useQuery(GET_ALL_ORDERS);
+	const [selectedOrder, setSelectedOrder] = useState(null);
 
-	if (loading) return <p>Loading orders...</p>;
-	if (error) return <p>Error loading orders</p>;
+	// 📌 Manejo de carga y errores
+	if (loading) return <p className="text-center text-gray-600">Loading orders...</p>;
+	if (error) return <p className="text-center text-red-600">Error fetching orders</p>;
 
-	const handleStatusChange = (orderId, newStatus) => {
-		setSelectedStatus({ ...selectedStatus, [orderId]: newStatus });
-	};
+	// 📌 Filtrar órdenes según el rol del usuario (Admin ve todo, Cliente solo las suyas)
+	const orders =
+		user.role === 'admin' ? data?.getOrders : data?.getOrders.filter((order) => order.client?.id === user.id);
 
-	const handleSaveStatus = async (orderId) => {
-		await updateOrder({ variables: { orderId, status: selectedStatus[orderId] } });
-		alert('Status updated');
-	};
+	// 📌 Si no hay órdenes, mostramos un mensaje amigable
+	if (!orders || orders.length === 0) {
+		return <p className="text-center text-gray-500">No orders found.</p>;
+	}
 
 	return (
-		<div className="mt-6">
-			<h2 className="text-lg font-bold mb-4">Orders</h2>
-			<table className="w-full border-collapse border border-gray-200">
-				<thead>
-					<tr className="bg-gray-100">
-						<th className="border p-2">ID</th>
-						<th className="border p-2">Cliente</th>
-						<th className="border p-2">Estado</th>
-						<th className="border p-2">Acciones</th>
-					</tr>
-				</thead>
-				<tbody>
-					{data.orders.map((order) => (
-						<tr key={order.id} className="border">
-							<td className="p-2">{order.id}</td>
-							<td className="p-2">{order.clientName}</td>
-							<td className="p-2">
-								<select
-									value={selectedStatus[order.id] || order.status}
-									onChange={(e) => handleStatusChange(order.id, e.target.value)}
-									className="border rounded p-1"
-								>
-									<option value="Pending">Pending</option>
-									<option value="Processing">Processing</option>
-									<option value="Completed">Completed</option>
-								</select>
-							</td>
-							<td className="p-2">
-								<button
-									onClick={() => handleSaveStatus(order.id)}
-									className="bg-blue-500 text-white px-3 py-1 rounded"
-								>
-									Save
-								</button>
-							</td>
-							<td className="p-2">{/* <UploadToS3 orderId={order.id} /> */}</td>
+		<>
+			<h1 className="m-10 ml-0 mb-5 text-2xl font-bold">Orders</h1>
+
+			<div className="overflow-x-auto">
+				<table className="w-full border-collapse border border-gray-300 shadow-md">
+					<thead>
+						<tr className="bg-gray-200 text-gray-700">
+							<th className="border p-3 text-left">Order ID</th>
+							<th className="border p-3 text-left">Client</th>
+							<th className="border p-3 text-left">Designer</th>
+							<th className="border p-3 text-left">Status</th>
+							<th className="border p-3 text-left">Category</th>
+							<th className="border p-3 text-left">Order Type</th>
+							<th className="border p-3 text-left">Actions</th>
 						</tr>
-					))}
-				</tbody>
-			</table>
-		</div>
+					</thead>
+					<tbody>
+						{orders.map((order) => (
+							<tr
+								key={order.id}
+								className="hover:bg-gray-100 cursor-pointer transition"
+								onClick={() => setSelectedOrder(order)}
+							>
+								<td className="border p-3">{order.id}</td>
+								<td className="border p-3">{order.client?.name || 'N/A'}</td>
+								<td className="border p-3">{order.designer?.name || 'N/A'}</td>
+								<td className="border p-3">{order.status}</td>
+								<td className="border p-3">{order.category?.name || 'N/A'}</td>
+								<td className="border p-3">{order.orderType || 'N/A'}</td>
+								<td className="border p-3">
+									<button
+										className="px-3 py-1 bg-blue-500 text-white rounded shadow hover:bg-blue-700 transition"
+										onClick={(e) => {
+											e.stopPropagation(); // Evitar que se seleccione la fila completa
+											setSelectedOrder(order);
+										}}
+									>
+										Edit
+									</button>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+
+			{/* Modal para editar una orden */}
+			{selectedOrder && (
+				<OrderForm
+					open={true}
+					setOpen={() => setSelectedOrder(null)}
+					order={selectedOrder}
+					onOrderUpdated={refetch}
+				/>
+			)}
+		</>
 	);
 };
 

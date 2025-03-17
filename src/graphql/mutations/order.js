@@ -1,3 +1,6 @@
+import { gql } from '@apollo/client';
+
+// ✅ Crear nueva orden
 export const CREATE_ORDER = gql`
 	mutation CreateOrder(
 		$designer: ID!
@@ -10,6 +13,9 @@ export const CREATE_ORDER = gql`
 		$shipper: String
 		$itemNumber: String
 		$poNumber: String
+		$orderType: String!
+		$deliveryAddress: String
+		$warehouseAddress: String
 	) {
 		createOrder(
 			designer: $designer
@@ -22,6 +28,9 @@ export const CREATE_ORDER = gql`
 			shipper: $shipper
 			itemNumber: $itemNumber
 			poNumber: $poNumber
+			orderType: $orderType
+			deliveryAddress: $deliveryAddress
+			warehouseAddress: $warehouseAddress
 		) {
 			id
 			receivedOn
@@ -33,12 +42,16 @@ export const CREATE_ORDER = gql`
 				id
 				name
 			}
-			description
-			category {
-				id
-				name
-			}
-			quantity
+			status
+		}
+	}
+`;
+
+// ✅ Actualizar una orden existente
+export const UPDATE_ORDER = gql`
+	mutation UpdateOrder($orderId: ID!, $status: String!) {
+		updateOrderStatus(orderId: $orderId, status: $status) {
+			id
 			status
 		}
 	}

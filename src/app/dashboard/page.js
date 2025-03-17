@@ -2,7 +2,9 @@
 
 import { UserDropdown } from '@/components';
 import { AdminDashboard, ClientDashboard } from '@/components/molecules';
-import { useReactiveVar } from '@apollo/client';
+import { LOGOUT } from '@/graphql/mutations/auth';
+import { GET_ME } from '@/graphql/queries/auth';
+import { useMutation, useQuery } from '@apollo/client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { userVar } from '../ApolloConfig';
@@ -16,8 +18,19 @@ const getGreeting = () => {
 
 const Dashboard = () => {
 	const router = useRouter();
-	const user = useReactiveVar(userVar);
 	const [greeting, setGreeting] = useState(getGreeting());
+	const [logout] = useMutation(LOGOUT);
+
+	// 🔥 Cargar datos del usuario con GET_ME
+	const { data, loading, error } = useQuery(GET_ME, {
+		onCompleted: (data) => {
+			if (data?.me) userVar(data.me); // 🔄 Actualizar el estado reactivo
+		}
+	});
+
+	console.log('DATA', data);
+
+	const user = userVar(); // 🔥 Obtener el usuario actualizado de userVar()
 
 	useEffect(() => {
 		const timer = setInterval(() => {
@@ -26,11 +39,32 @@ const Dashboard = () => {
 		return () => clearInterval(timer);
 	}, []);
 
+	// ✅ Función para cerrar sesión
+	const handleLogout = async () => {
+		try {
+			await logout();
+
+			// 🔥 Manually clear cookies in the browser
+			document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; max-age=0; path=/;';
+			document.cookie = 'allowedRoutes=; expires=Thu, 01 Jan 1970 00:00:00 UTC; max-age=0; path=/;';
+			document.cookie = 'userData=; expires=Thu, 01 Jan 1970 00:00:00 UTC; max-age=0; path=/;';
+
+			// 🚀 Redirect to home to trigger middleware
+			router.push('/');
+			router.refresh(); // 🔥 Ensure middleware runs and clears allowedRoutes
+			userVar(null);
+		} catch (err) {
+			console.error('Logout error:', err);
+		}
+	};
+
 	console.log('User in Dashboard:', user);
 
 	// 🔥 Renderizar dashboard según el rol del usuario
 	const renderDashboard = () => {
-		if (!user) return <p>Loading...</p>;
+		if (loading) return <p>Loading...</p>;
+		if (error) return <p>Error loading user data</p>;
+		if (!user) return <p>Unauthorized</p>;
 		if (user.role === 'admin') return <AdminDashboard />;
 		if (user.role === 'client') return <ClientDashboard />;
 		return <p>Unauthorized</p>;
@@ -43,7 +77,7 @@ const Dashboard = () => {
 				<h1 className="text-2xl font-bold">
 					{greeting} {user?.name ? `, ${user.name}` : ''}
 				</h1>
-				<UserDropdown user={user} />
+				<UserDropdown user={user} onLogout={handleLogout} />
 			</div>
 
 			{/* Render dinámico del Dashboard */}

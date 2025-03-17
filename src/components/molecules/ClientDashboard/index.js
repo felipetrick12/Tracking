@@ -1,19 +1,32 @@
-import { CardMetrics, OrdersTable } from '@/components/atoms';
-
-const CLIENT_METRICS = [
-	{ label: 'Total Clientes', value: '45', change: '+3.2%', changeType: 'positive' },
-	{ label: 'Total Órdenes', value: '120', change: '+5%', changeType: 'positive' },
-	{ label: 'Órdenes en Proceso', value: '8', change: '-2%', changeType: 'negative' }
-];
+import { CardMetrics } from '@/components/atoms';
+import { GET_CLIENT_METRICS } from '@/graphql/queries/metrics';
+import { useQuery } from '@apollo/client';
 
 const ClientDashboard = () => {
+	const { data, loading, error } = useQuery(GET_CLIENT_METRICS);
+
+	if (loading) return <p>Loading metrics...</p>;
+	if (error) return <p>Error fetching metrics</p>;
+
+	const CLIENT_METRICS = [
+		{
+			label: 'Total Clients',
+			value: data?.getClientMetrics?.totalClients || 0,
+			change: '+3.2%',
+			changeType: 'positive'
+		},
+		{
+			label: 'Total Orders',
+			value: data?.getClientMetrics?.totalOrders || 0,
+			change: '+5%',
+			changeType: 'positive'
+		}
+	];
+
 	return (
 		<div>
-			{/* Métricas del Cliente */}
+			{/* Metrics for Client */}
 			<CardMetrics metrics={CLIENT_METRICS} />
-
-			{/* Tabla de Órdenes */}
-			<OrdersTable userRole="client" />
 		</div>
 	);
 };
