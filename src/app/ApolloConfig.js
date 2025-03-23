@@ -17,9 +17,6 @@ export function makeClient() {
 	const token = getClientToken();
 	const userData = getUserFromCookies();
 
-	console.log('🔑 Token:', token);
-	console.log('👤 User:', userData);
-
 	if (userData) {
 		userVar(userData); // ✅ Save user in global reactive variable
 	}

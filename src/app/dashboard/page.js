@@ -68,7 +68,6 @@ const Dashboard = () => {
 			case 'admin':
 				return <AdminDashboard />;
 			case 'designer':
-				return <ClientDashboard />;
 			case 'client':
 				return <ClientDashboard />;
 

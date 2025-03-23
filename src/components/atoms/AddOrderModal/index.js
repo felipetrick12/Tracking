@@ -157,8 +157,6 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 		try {
 			const cleanInput = sanitizeOrderInput(formData);
 
-			console.log('cleanInput', cleanInput);
-
 			if (isEditMode) {
 				await updateOrder({ variables: { orderId: order.id, input: cleanInput } });
 				toast({ title: '✅ Order updated successfully!' });
@@ -169,20 +167,19 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 			setOpen(false);
 			refetch();
 		} catch (error) {
-			console.log('error', error);
-			toast.error(`❌ Error: ${error.message}`);
+			toast({ title: `❌ Error: ${error.message}` });
 		}
 	};
 
 	const clients = clientsData?.getClientsByDesigner || [];
-	const designers = userData?.getUsers?.filter((u) => u.role === 'designer') || [];
+	const designers = userData?.getUsers?.filter((u) => u.role === 'designer' || u.role === 'client') || [];
 	const categories = categoriesData?.getTypes || [];
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogContent className="max-w-4xl max-h-[90vh] overflow-auto p-10">
 				<DialogHeader className={'my-3'}>
-					<DialogTitle className="text-3xl font-semibold">
+					<DialogTitle className="text-2xl font-semibold">
 						{isEditMode ? 'Edit Order' : 'Create Order'}
 					</DialogTitle>
 				</DialogHeader>

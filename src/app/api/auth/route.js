@@ -14,8 +14,6 @@ export async function GET(req) {
 		// 🔥 Ejecutar la consulta GET_ME en Apollo Server
 		const { data } = await executeGraphQL(GET_ME, {}, token);
 
-		console.log('data', data);
-
 		if (!data?.me) {
 			return NextResponse.json({ error: 'User not found' }, { status: 404 });
 		}

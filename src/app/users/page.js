@@ -75,7 +75,7 @@ const UsersPage = () => {
 								<TableCell>{user.email}</TableCell>
 								<TableCell className="capitalize">{user.role}</TableCell>
 								<TableCell>{user.assignedTo?.name || 'N/A'}</TableCell>
-								<TableCell>{user.organizations?.[0]?.name || 'N/A'}</TableCell>
+								<TableCell>{user.activeOrganization?.name || 'N/A'}</TableCell>
 								<TableCell className="text-right">
 									<Button
 										size="sm"

@@ -7,16 +7,13 @@ import { useQuery } from '@apollo/client';
 import { format } from 'date-fns';
 import { useState } from 'react';
 
-const OrdersTable = ({ user, refetchMetrics }) => {
+const OrdersTable = ({ user, orders, refetchMetrics }) => {
 	const { data, loading, error, refetch } = useQuery(GET_ALL_ORDERS);
 	const [selectedOrder, setSelectedOrder] = useState(null);
 	const [modalOpen, setModalOpen] = useState(false);
 
 	if (loading) return <p className="text-center text-muted-foreground">Loading orders...</p>;
 	if (error) return <p className="text-center text-destructive">Error fetching orders</p>;
-
-	const orders =
-		user.role === 'admin' ? data?.getOrders : data?.getOrders.filter((order) => order.client?.id === user.id);
 
 	if (!orders || orders.length === 0) {
 		return <p className="text-center text-muted-foreground">No orders found.</p>;

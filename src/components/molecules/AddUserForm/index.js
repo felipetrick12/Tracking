@@ -27,15 +27,21 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 
 	const isSuperadmin = userData?.me?.role === 'superadmin';
 
-	const {
-		data: designersData,
-		loading: loadingDesigners,
-		refetch: refetchDesigners
-	} = useQuery(GET_USERS_BY_ROLE, {
+	const { data: designersData } = useQuery(GET_USERS_BY_ROLE, {
 		variables: isSuperadmin
-			? { role: 'designer' } // 🔓 No filtro por organización
+			? { role: 'designer' }
 			: {
 					role: 'designer',
+					organizationId: userData?.me?.activeOrganization?.id
+			  },
+		skip: !userData?.me || (!isSuperadmin && !userData?.me?.activeOrganization?.id)
+	});
+
+	const { data: clientsData } = useQuery(GET_USERS_BY_ROLE, {
+		variables: isSuperadmin
+			? { role: 'client' }
+			: {
+					role: 'client',
 					organizationId: userData?.me?.activeOrganization?.id
 			  },
 		skip: !userData?.me || (!isSuperadmin && !userData?.me?.activeOrganization?.id)
@@ -103,7 +109,7 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 		if (!formData.email) newErrors.email = 'Email is required';
 		if (!user && !formData.password) newErrors.password = 'Password is required';
 		if (!formData.role) newErrors.role = 'Role is required';
-		if (formData.role === 'client' && !formData.assignedTo) newErrors.assignedTo = 'Designer is required';
+		if (formData.role === 'user' && !formData.assignedTo) newErrors.assignedTo = 'Designer is required';
 
 		setErrors(newErrors);
 		return Object.keys(newErrors).length === 0;
@@ -114,8 +120,6 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 		setOpen(false);
 		setUser(null);
 	};
-
-	console.log('errors', errors);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -141,9 +145,7 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 				...(formData.name !== user?.name && { name: formData.name }),
 				...(formData.role !== user?.role && { role: formData.role }),
 				...(formData.assignedTo !== user?.assignedTo?.id && { assignedTo: formData.assignedTo }),
-				...(formData.activeOrganization !== user?.organizations?.[0]?.id && {
-					activeOrganization: formData.activeOrganization
-				}),
+				activeOrganization: formData.activeOrganization,
 				...(base64Image && { photoUrl: base64Image })
 			};
 
@@ -171,6 +173,11 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 			setLoading(false);
 		}
 	};
+
+	const designers = designersData?.getUsersByRole || [];
+	const clients = clientsData?.getUsersByRole || [];
+
+	const assignableUsers = [...designers, ...clients];
 
 	return (
 		<>
@@ -295,7 +302,7 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 										<SelectValue placeholder="Select designer" />
 									</SelectTrigger>
 									<SelectContent>
-										{designersData?.getUsersByRole.map((designer) => (
+										{assignableUsers?.map((designer) => (
 											<SelectItem key={designer.id} value={designer.id}>
 												{designer.name}
 												{userData?.me?.role === 'superadmin' &&

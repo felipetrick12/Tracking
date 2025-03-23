@@ -3,11 +3,11 @@ import { executeGraphQL } from '@/lib/apolloServer';
 import { NextResponse } from 'next/server';
 
 const roleProtectedRoutes = {
-	superadmin: ['/dashboard', '/clients', '/users', '/organizations', '/orders', '/settings', '/permissions'],
-	admin: ['/dashboard', '/clients', '/users', '/organizations', '/permissions'],
-	designer: ['/dashboard', '/orders', '/settings'],
-	client: ['/dashboard'],
-	user: ['/dashboard']
+	superadmin: ['/dashboard', '/users', '/organizations', '/orders'],
+	admin: ['/dashboard', '/users', '/orders'],
+	designer: ['/dashboard', '/clients'],
+	client: ['/dashboard', '/clients']
+	// user: ['/dashboard']
 };
 
 const publicRoutes = ['/', '/register']; // Public pages
@@ -37,7 +37,6 @@ export default async function middleware(req) {
 		const { data } = await executeGraphQL(GET_ME, {}, token);
 
 		if (!data?.me) {
-			console.log('❌ User not found, clearing token and redirecting to login');
 			const response = NextResponse.redirect(new URL('/', req.url));
 			response.cookies.delete('token');
 			response.cookies.delete('userData');
@@ -73,11 +72,9 @@ export default async function middleware(req) {
 
 		// ✅ Redirect users from login page if already authenticated
 		if (req.nextUrl.pathname === '/') {
-			console.log('🔄 User is authenticated but on login page. Redirecting to dashboard.');
 			return NextResponse.redirect(new URL('/dashboard', req.url));
 		}
 
-		console.log('✅ Allowed routes stored in cookie:', allowedRoutes);
 		return response;
 	} catch (error) {
 		console.error('⚠️ Error validating user:', error);

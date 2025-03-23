@@ -1,111 +1,68 @@
 'use client';
 
-import { GET_ME } from '@/graphql/queries/auth';
-import { GET_ORDERS_BY_DESIGNER } from '@/graphql/queries/order';
-import { GET_USERS_BY_ROLE } from '@/graphql/queries/user';
-import { gql, useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import { useState } from 'react';
 
-const ClientsPage = () => {
-	const { data: userData } = useQuery(GET_ME); // Obtiene el usuario autenticado
+import { GET_ME } from '@/graphql/queries/auth';
+import { GET_ALL_ORDERS } from '@/graphql/queries/order';
+import { GET_MY_CLIENTS } from '@/graphql/queries/user';
 
-	console.log('userData?.me?', userData?.me);
+import { OrdersTable } from '@/components/atoms';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 
-	const {
-		data: designersData,
-		refetch,
-		loading: loadingDesigners,
-		error: errorDesigners
-	} = useQuery(GET_USERS_BY_ROLE, {
-		variables: { role: 'designer', organizationId: userData?.me?.activeOrganization?.id },
-		skip: !userData?.me?.activeOrganization?.id // Evita ejecutar si no hay activeOrganization
+const ClientOrdersDashboard = () => {
+	const { data: userData } = useQuery(GET_ME);
+	const userId = userData?.me?.id;
+
+	const [selectedClient, setSelectedClient] = useState();
+
+	const { data: clientsData, loading: loadingClients } = useQuery(GET_MY_CLIENTS, {
+		skip: !userId
 	});
 
-	const [selectedDesigner, setSelectedDesigner] = useState(null);
-
-	// 🔹 Cargar órdenes activas cuando cambia el diseñador seleccionado
-	const {
-		data: ordersData,
-		loading: loadingOrders,
-		error: errorOrders
-	} = useQuery(GET_ORDERS_BY_DESIGNER, {
-		variables: { designerId: selectedDesigner },
-		skip: !selectedDesigner // No ejecutar la query si no hay diseñador seleccionado
+	const { data: ordersData, loading: loadingOrders } = useQuery(GET_ALL_ORDERS, {
+		variables: { clientId: selectedClient },
+		skip: !selectedClient
 	});
 
-	console.log('designersData', ordersData);
-
-	const designers = designersData?.getUsersByRole || [];
-	const orders = ordersData?.getOrdersByDesigner || [];
-
-	console.log('selectedDesigner', selectedDesigner);
+	const clients = clientsData?.getMyClients ?? [];
+	const orders = ordersData?.getOrders ?? [];
 
 	return (
-		<div className="flex h-screen">
-			{/* 🔹 Sidebar de Diseñadores */}
-			<div className="w-1/4 bg-gray-100 p-4 border-r overflow-auto">
-				<h2 className="text-lg font-bold mb-3">Designers</h2>
-				{loadingDesigners ? (
-					<p>Loading designers...</p>
-				) : errorDesigners ? (
-					<p className="text-red-500">Error loading designers</p>
+		<div className="flex h-[calc(100vh-80px)]">
+			{/* Sidebar - Clients */}
+			<ScrollArea className="w-64 bg-muted p-4 border-r">
+				<h2 className="font-semibold text-lg mb-4">My Clients</h2>
+				{loadingClients ? (
+					<p className="text-sm text-muted-foreground">Loading clients...</p>
+				) : clients.length === 0 ? (
+					<p className="text-sm text-muted-foreground">No clients found.</p>
 				) : (
-					<ul>
-						{designers.map((designer) => (
-							<li
-								key={designer.id}
-								onClick={() => setSelectedDesigner(designer.id)}
-								className={`p-2 cursor-pointer rounded-md ${
-									selectedDesigner === designer.id ? 'bg-blue-500 text-white' : 'hover:bg-gray-200'
-								}`}
-							>
-								{designer.name}
-							</li>
+					<>
+						{clients.map((client, index) => (
+							<div key={client.id}>
+								<Button
+									variant={selectedClient === client.id ? 'default' : 'ghost'}
+									className="w-full justify-start mb-1"
+									onClick={() => setSelectedClient(client.id)}
+								>
+									{client.name}
+								</Button>
+								{index !== clients.length - 1 && <Separator className="my-2" />}
+							</div>
 						))}
-					</ul>
+					</>
 				)}
-			</div>
+			</ScrollArea>
 
-			{/* 🔹 Contenedor de Órdenes Activas */}
-			<div className="w-3/4 p-6">
-				<h2 className="text-lg font-bold mb-3">Active Orders</h2>
-				{!selectedDesigner ? (
-					<p className="text-gray-500">Select a designer to view active orders</p>
-				) : loadingOrders ? (
-					<p>Loading orders...</p>
-				) : errorOrders ? (
-					<p className="text-red-500">Error loading orders</p>
-				) : orders.length === 0 ? (
-					<p className="text-gray-500">No active orders for this designer</p>
-				) : (
-					<table className="w-full border-collapse border border-gray-300 mt-4">
-						<thead>
-							<tr className="bg-gray-100">
-								<th className="border p-2">Client</th>
-								<th className="border p-2">Description</th>
-								<th className="border p-2">Category</th>
-								<th className="border p-2">Quantity</th>
-								<th className="border p-2">Received On</th>
-								<th className="border p-2">Status</th>
-							</tr>
-						</thead>
-						<tbody>
-							{orders.map((order) => (
-								<tr key={order.id} className="border">
-									<td className="border p-2">{order.client.name}</td>
-									<td className="border p-2">{order.description}</td>
-									<td className="border p-2">{order.category.name}</td>
-									<td className="border p-2">{order.quantity}</td>
-									<td className="border p-2">{new Date(order.receivedOn).toLocaleDateString()}</td>
-									<td className="border p-2 capitalize">{order.status}</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				)}
+			{/* Orders content */}
+			<div className="flex-1 p-6 overflow-auto">
+				<OrdersTable orders={orders} />
 			</div>
 		</div>
 	);
 };
 
-export default ClientsPage;
+export default ClientOrdersDashboard;

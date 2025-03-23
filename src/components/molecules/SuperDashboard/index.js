@@ -1,9 +1,11 @@
 import { CardMetrics, OrdersTable } from '@/components/atoms';
 import { GET_SUPERADMIN_METRICS } from '@/graphql/queries/metrics';
+import { GET_ALL_ORDERS } from '@/graphql/queries/order';
 import { useQuery } from '@apollo/client';
 
 const SuperDashboard = () => {
 	const { data, loading, error, refetch } = useQuery(GET_SUPERADMIN_METRICS);
+	const { data: orders } = useQuery(GET_ALL_ORDERS);
 
 	if (loading) return <p>Loading metrics...</p>;
 	if (error) return <p>Error fetching metrics</p>;
@@ -35,6 +37,7 @@ const SuperDashboard = () => {
 			<CardMetrics metrics={ADMIN_METRICS} />
 
 			<OrdersTable
+				orders={orders?.getOrders}
 				user={{
 					role: 'admin'
 				}}

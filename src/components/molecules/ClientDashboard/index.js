@@ -1,9 +1,9 @@
 import { CardMetrics } from '@/components/atoms';
-import { GET_CLIENT_METRICS } from '@/graphql/queries/metrics';
+import { GET_DESIGNER_METRICS } from '@/graphql/queries/metrics';
 import { useQuery } from '@apollo/client';
 
 const ClientDashboard = () => {
-	const { data, loading, error } = useQuery(GET_CLIENT_METRICS);
+	const { data, loading, error } = useQuery(GET_DESIGNER_METRICS);
 
 	if (loading) return <p>Loading metrics...</p>;
 	if (error) return <p>Error fetching metrics</p>;
@@ -11,13 +11,13 @@ const ClientDashboard = () => {
 	const CLIENT_METRICS = [
 		{
 			label: 'Total Clients',
-			value: data?.getClientMetrics?.totalClients || 0,
+			value: data?.getDesignerMetrics?.totalClients || 0,
 			change: '+3.2%',
 			changeType: 'positive'
 		},
 		{
 			label: 'Total Orders',
-			value: data?.getClientMetrics?.totalOrders || 0,
+			value: data?.getDesignerMetrics?.totalOrders || 0,
 			change: '+5%',
 			changeType: 'positive'
 		}
@@ -27,7 +27,7 @@ const ClientDashboard = () => {
 		<div>
 			{/* Metrics for Client */}
 			<CardMetrics metrics={CLIENT_METRICS} />
-		</div>
+		</div>	
 	);
 };
 

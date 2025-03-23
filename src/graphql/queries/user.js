@@ -9,6 +9,10 @@ export const GET_USERS = gql`
 			email
 			role
 			photoUrl
+			activeOrganization {
+				id
+				name
+			}
 			organizations {
 				id
 				name
@@ -51,6 +55,21 @@ export const GET_USERS_BY_ROLE = gql`
 			organizations {
 				id
 				name
+			}
+		}
+	}
+`;
+
+//Designer CLients
+
+export const GET_MY_CLIENTS = gql`
+	query GetMyClients {
+		getMyClients {
+			id
+			name
+			email
+			assignedTo {
+				id
 			}
 		}
 	}
