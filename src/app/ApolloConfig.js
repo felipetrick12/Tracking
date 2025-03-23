@@ -17,9 +17,10 @@ const getUserFromCookies = () => {
 const getGraphQLEndpoint = () => {
 	if (process.env.NODE_ENV === 'development') {
 		return 'http://localhost:4000/graphql'; // ✅ local backend
-	} else {
-		return 'http://backend-prod.eba-5q2hpdgq.us-west-2.elasticbeanstalk.com/graphql';
 	}
+
+	// 👇 para producción, usa la variable del entorno
+	return process.env.REACT_APP_API_URL;
 };
 
 export function makeClient() {
