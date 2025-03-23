@@ -13,16 +13,26 @@ const getUserFromCookies = () => {
 	return cookies['userData'] ? JSON.parse(cookies['userData']) : null;
 };
 
+// 🧠 Detect environment (development vs production)
+const getGraphQLEndpoint = () => {
+	if (process.env.NODE_ENV === 'development') {
+		return 'http://localhost:4000/graphql'; // ✅ local backend
+	}
+
+	// 👇 para producción, usa la variable del entorno
+	return process.env.REACT_APP_API_URL;
+};
+
 export function makeClient() {
 	const token = getClientToken();
 	const userData = getUserFromCookies();
 
 	if (userData) {
-		userVar(userData); // ✅ Save user in global reactive variable
+		userVar(userData);
 	}
 
 	const httpLink = new HttpLink({
-		uri: 'http://localhost:4000/graphql',
+		uri: getGraphQLEndpoint(),
 		credentials: 'include',
 		headers: {
 			Authorization: token ? `Bearer ${token}` : ''
