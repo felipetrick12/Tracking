@@ -1,7 +1,7 @@
 'use client';
 
 import { UserDropdown } from '@/components';
-import { AdminDashboard, ClientDashboard } from '@/components/molecules';
+import { AdminDashboard, ClientDashboard, SuperDashboard } from '@/components/molecules';
 import { LOGOUT } from '@/graphql/mutations/auth';
 import { GET_ME } from '@/graphql/queries/auth';
 import { useMutation, useQuery } from '@apollo/client';
@@ -27,8 +27,6 @@ const Dashboard = () => {
 			if (data?.me) userVar(data.me); // 🔄 Actualizar el estado reactivo
 		}
 	});
-
-	console.log('user', data);
 
 	const user = userVar(); // 🔥 Obtener el usuario actualizado de userVar()
 
@@ -63,9 +61,20 @@ const Dashboard = () => {
 		if (loading) return <p>Loading...</p>;
 		if (error) return <p>Error loading user data</p>;
 		if (!user) return <p>Unauthorized</p>;
-		if (user.role === 'admin') return <AdminDashboard />;
-		if (user.role === 'client') return <ClientDashboard />;
-		return <p>Unauthorized</p>;
+
+		switch (user.role) {
+			case 'superadmin':
+				return <SuperDashboard />;
+			case 'admin':
+				return <AdminDashboard />;
+			case 'designer':
+				return <ClientDashboard />;
+			case 'client':
+				return <ClientDashboard />;
+
+			default:
+				return <p>Unauthorized</p>;
+		}
 	};
 
 	return (

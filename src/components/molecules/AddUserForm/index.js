@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { Eye, EyeOff } from 'lucide-react';
 
 const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen }) => {
 	const { data: rolesData } = useQuery(GET_ROLES);
@@ -49,6 +50,7 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 		photo: null
 	});
 
+	const [showPassword, setShowPassword] = useState(false);
 	const [errors, setErrors] = useState({});
 	const [previewImage, setPreviewImage] = useState(null);
 	const [loading, setLoading] = useState(false);
@@ -227,16 +229,23 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 
 							{/* Password */}
 							{!user && (
-								<div>
+								<div className="relative">
 									<Label>Password</Label>
 									<Input
-										type="password"
+										type={showPassword ? 'text' : 'password'}
 										name="password"
 										value={formData.password}
 										onChange={handleChange}
 										placeholder="Password"
-										className={errors.password && 'border-red-500'}
+										className={errors.password && 'border-red-500 pr-10'}
 									/>
+									<button
+										type="button"
+										className="absolute right-2 top-9 text-gray-500 hover:text-black"
+										onClick={() => setShowPassword((prev) => !prev)}
+									>
+										{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+									</button>
 									{errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
 								</div>
 							)}
@@ -284,34 +293,37 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 							</div>
 
 							{/* Organization */}
-							<div>
-								<Label>Organization</Label>
-								<Select
-									value={formData.activeOrganization}
-									onValueChange={(value) =>
-										setFormData((prev) => ({ ...prev, activeOrganization: value }))
-									}
-								>
-									<SelectTrigger className={errors.activeOrganization && 'border-red-500'}>
-										<SelectValue placeholder="Select organization" />
-									</SelectTrigger>
-									<SelectContent>
-										{orgsData?.getOrganizations.map((org) => (
-											<SelectItem key={org.id} value={org.id}>
-												{org.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-								{errors.activeOrganization && (
-									<p className="text-red-500 text-sm mt-1">{errors.activeOrganization}</p>
-								)}
-							</div>
+
+							{userData?.me?.role === 'superadmin' && (
+								<div>
+									<Label>Organization</Label>
+									<Select
+										value={formData.activeOrganization}
+										onValueChange={(value) =>
+											setFormData((prev) => ({ ...prev, activeOrganization: value }))
+										}
+									>
+										<SelectTrigger className={errors.activeOrganization && 'border-red-500'}>
+											<SelectValue placeholder="Select organization" />
+										</SelectTrigger>
+										<SelectContent>
+											{orgsData?.getOrganizations.map((org) => (
+												<SelectItem key={org.id} value={org.id}>
+													{org.name}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									{errors.activeOrganization && (
+										<p className="text-red-500 text-sm mt-1">{errors.activeOrganization}</p>
+									)}
+								</div>
+							)}
 						</div>
 
 						{/* Buttons */}
 						<div className="col-span-2 flex justify-end gap-4">
-							<Button type="button" variant="secondary" onClick={handleCancel}>
+							<Button type="button" onClick={handleCancel} disabled={loading}>
 								Cancel
 							</Button>
 							<Button type="submit" disabled={loading}>

@@ -3,8 +3,10 @@ import { executeGraphQL } from '@/lib/apolloServer';
 import { NextResponse } from 'next/server';
 
 const roleProtectedRoutes = {
+	superadmin: ['/dashboard', '/clients', '/users', '/organizations', '/orders', '/settings', '/permissions'],
 	admin: ['/dashboard', '/clients', '/users', '/organizations', '/permissions'],
 	designer: ['/dashboard', '/orders', '/settings'],
+	client: ['/dashboard'],
 	user: ['/dashboard']
 };
 
@@ -44,8 +46,6 @@ export default async function middleware(req) {
 		}
 
 		const role = data.me.role || 'user';
-
-		// 🚀 Get allowed routes based on role
 		const allowedRoutes = roleProtectedRoutes[role] || [];
 
 		// ✅ Store token for client-side access (Apollo Client)

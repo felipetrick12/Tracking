@@ -19,13 +19,12 @@ import {
 } from '@/components/ui/sidebar';
 
 const ROUTES = [
-	{ path: '/dashboard', label: 'Home', icon: Home, roles: ['admin', 'designer', 'user'] },
-	{ path: '/clients', label: 'Clients', icon: Users, roles: ['admin'] },
-	{ path: '/settings', label: 'Settings', icon: Cog, roles: ['admin', 'designer'] },
-	{ path: '/orders', label: 'Orders', icon: ClipboardList, roles: ['admin', 'designer'] },
-	{ path: '/users', label: 'Manage Users', icon: UserRound, roles: ['admin'] },
-	{ path: '/organizations', label: 'Organizations', icon: Building, roles: ['admin'] },
-	{ path: '/permissions', label: 'Permissions', icon: ShieldCheck, roles: ['admin'] }
+	{ path: '/dashboard', label: 'Home', icon: Home, roles: ['superadmin', 'admin', 'designer', 'user'] },
+	{ path: '/clients', label: 'Clients', icon: Users, roles: ['superadmin', 'admin'] },
+	{ path: '/orders', label: 'Orders', icon: ClipboardList, roles: ['superadmin', 'admin', 'designer'] },
+	{ path: '/users', label: 'Manage Users', icon: UserRound, roles: ['superadmin', 'admin'] },
+	{ path: '/organizations', label: 'Organizations', icon: Building, roles: ['superadmin', 'admin'] }
+	// { path: '/settings', label: 'Settings', icon: Cog, roles: ['superadmin', 'admin', 'designer'] },
 ];
 
 function AppSidebar() {

@@ -7,7 +7,7 @@ import { useQuery } from '@apollo/client';
 import { format } from 'date-fns';
 import { useState } from 'react';
 
-const OrdersTable = ({ user }) => {
+const OrdersTable = ({ user, refetchMetrics }) => {
 	const { data, loading, error, refetch } = useQuery(GET_ALL_ORDERS);
 	const [selectedOrder, setSelectedOrder] = useState(null);
 	const [modalOpen, setModalOpen] = useState(false);
@@ -21,6 +21,11 @@ const OrdersTable = ({ user }) => {
 	if (!orders || orders.length === 0) {
 		return <p className="text-center text-muted-foreground">No orders found.</p>;
 	}
+
+	const refetchData = async () => {
+		await refetchMetrics();
+		await refetch();
+	};
 
 	return (
 		<>
@@ -105,7 +110,7 @@ const OrdersTable = ({ user }) => {
 				</Table>
 			</Card>
 
-			<AddOrderModal open={modalOpen} setOpen={setModalOpen} order={selectedOrder} refetch={refetch} />
+			<AddOrderModal open={modalOpen} setOpen={setModalOpen} order={selectedOrder} refetch={refetchData} />
 		</>
 	);
 };

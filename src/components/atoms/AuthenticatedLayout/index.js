@@ -16,7 +16,7 @@ const AuthenticatedLayout = ({ children }) => {
 
 				{/* Main */}
 				<div className="flex-1 h-full overflow-y-auto overflow-x-hidden bg-gray-100 p-5">
-					<SidebarTrigger />
+					{!hideSidebarRoutes.includes(pathname) && <SidebarTrigger />}
 					{children}
 				</div>
 			</div>

@@ -98,13 +98,31 @@ body {
 	}
 }
 
+@layer components {
+	.default {
+		background-color: hsl(var(--background));
+		color: hsl(var(--foreground));
+		border: 1px solid hsl(var(--foreground));
+	}
 
+	.primary {
+		background-color: hsl(var(--primary));
+		color: hsl(var(--primary-foreground));
+		border: 1px solid hsl(var(--primary));
+	}
+
+	.secondary {
+		background-color: hsl(var(--secondary));
+		color: hsl(var(--secondary-foreground));
+		border: 1px solid hsl(var(--secondary));
+	}
+}
 
 @layer base {
-  * {
-    @apply border-border;
+	* {
+		@apply border-border;
 	}
-  body {
-    @apply bg-background text-foreground;
+	body {
+		@apply bg-background text-foreground;
 	}
 }

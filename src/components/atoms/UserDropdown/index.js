@@ -11,13 +11,14 @@ import { ArrowRightCircleIcon } from 'lucide-react';
 
 const UserDropdown = ({ user, onLogout }) => {
 	const username = user?.name || 'User';
+	const userPhoto = user?.photoUrl || 'https://i.pravatar.cc/60';
 
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
 				<div className="flex items-center cursor-pointer gap-2">
 					<Avatar>
-						<AvatarImage src="https://i.pravatar.cc/60" alt={username} />
+						<AvatarImage src={userPhoto} alt={username} />
 					</Avatar>
 				</div>
 			</DropdownMenuTrigger>

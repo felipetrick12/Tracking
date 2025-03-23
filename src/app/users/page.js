@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { GET_USERS } from '@/graphql/queries/user';
 import { useQuery } from '@apollo/client';
 import { UserIcon } from '@heroicons/react/24/outline';
+import { Pencil } from 'lucide-react';
 import { useState } from 'react';
 
 const UsersPage = () => {
@@ -77,14 +78,14 @@ const UsersPage = () => {
 								<TableCell>{user.organizations?.[0]?.name || 'N/A'}</TableCell>
 								<TableCell className="text-right">
 									<Button
-										variant="secondary"
 										size="sm"
+										className="text-white flex items-center gap-2"
 										onClick={() => {
 											setEditingUser(user);
 											setModalOpen(true);
 										}}
 									>
-										Edit
+										<Pencil className="w-4 h-4" />
 									</Button>
 								</TableCell>
 							</TableRow>
