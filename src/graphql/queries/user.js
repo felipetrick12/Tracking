@@ -43,11 +43,15 @@ export const GET_CLIENTS_BY_DESIGNER = gql`
 
 //✅ Get User by Role
 export const GET_USERS_BY_ROLE = gql`
-	query GetUsersByRole($role: String!, $organizationId: ID!) {
+	query GetUsersByRole($role: String!, $organizationId: ID) {
 		getUsersByRole(role: $role, organizationId: $organizationId) {
+			id
 			name
 			lastLogin
-			id
+			organizations {
+				id
+				name
+			}
 		}
 	}
 `;

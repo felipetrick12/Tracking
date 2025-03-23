@@ -25,16 +25,20 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 
 	const { toast } = useToast();
 
+	const isSuperadmin = userData?.me?.role === 'superadmin';
+
 	const {
 		data: designersData,
 		loading: loadingDesigners,
 		refetch: refetchDesigners
 	} = useQuery(GET_USERS_BY_ROLE, {
-		variables: {
-			role: 'designer',
-			organizationId: userData?.me?.activeOrganization?.id
-		},
-		skip: !userData?.me?.activeOrganization?.id
+		variables: isSuperadmin
+			? { role: 'designer' } // 🔓 No filtro por organización
+			: {
+					role: 'designer',
+					organizationId: userData?.me?.activeOrganization?.id
+			  },
+		skip: !userData?.me || (!isSuperadmin && !userData?.me?.activeOrganization?.id)
 	});
 
 	const [createUser] = useMutation(CREATE_USER);
@@ -99,7 +103,6 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 		if (!formData.email) newErrors.email = 'Email is required';
 		if (!user && !formData.password) newErrors.password = 'Password is required';
 		if (!formData.role) newErrors.role = 'Role is required';
-		if (!formData.activeOrganization) newErrors.activeOrganization = 'Organization is required';
 		if (formData.role === 'client' && !formData.assignedTo) newErrors.assignedTo = 'Designer is required';
 
 		setErrors(newErrors);
@@ -112,14 +115,17 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 		setUser(null);
 	};
 
+	console.log('errors', errors);
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		setErrors({});
 
 		if (!validateForm()) {
-			toast.error('Please fix the errors in the form.');
+			toast({ title: 'Please fix the errors in the form.' });
 			return;
 		}
+
+		setErrors({});
 
 		setLoading(true);
 		try {
@@ -160,7 +166,7 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 			await refetchDesigners();
 			setOpen(false);
 		} catch (err) {
-			toast.error(`❌ Error: ${err.message}`);
+			toast({ title: `❌ Error: ${err.message}` });
 		} finally {
 			setLoading(false);
 		}
@@ -261,11 +267,18 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 										<SelectValue placeholder="Select role" />
 									</SelectTrigger>
 									<SelectContent>
-										{rolesData?.getTypes.map((role) => (
-											<SelectItem key={role.id} value={role.name}>
-												{role.name}
-											</SelectItem>
-										))}
+										{rolesData?.getTypes
+											.filter((role) => {
+												if (userData?.me?.role !== 'superadmin') {
+													return role.name !== 'superadmin';
+												}
+												return true;
+											})
+											.map((role) => (
+												<SelectItem key={role.id} value={role.name}>
+													{role.name}
+												</SelectItem>
+											))}
 									</SelectContent>
 								</Select>
 								{errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
@@ -285,6 +298,12 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 										{designersData?.getUsersByRole.map((designer) => (
 											<SelectItem key={designer.id} value={designer.id}>
 												{designer.name}
+												{userData?.me?.role === 'superadmin' &&
+													designer.organizations?.length > 0 && (
+														<span className="ml-2 text-xs text-muted-foreground">
+															({designer.organizations[0]?.name})
+														</span>
+													)}
 											</SelectItem>
 										))}
 									</SelectContent>
