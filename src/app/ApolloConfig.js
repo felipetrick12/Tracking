@@ -20,7 +20,7 @@ const getGraphQLEndpoint = () => {
 	}
 
 	// 👇 para producción, usa la variable del entorno
-	return process.env.REACT_APP_API_URL;
+	return process.env.NEXT_PUBLIC_API_URL;
 };
 
 export function makeClient() {

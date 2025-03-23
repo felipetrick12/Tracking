@@ -4,7 +4,7 @@ const getGraphQLEndpoint = () => {
 	if (process.env.NODE_ENV === 'development') {
 		return 'http://localhost:4000/graphql';
 	}
-	return process.env.REACT_APP_API_URL;
+	return process.env.NEXT_PUBLIC_API_URL;
 };
 
 export const executeGraphQL = async (queryOrMutation, variables = {}, token = '', isMutation = false) => {
