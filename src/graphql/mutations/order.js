@@ -16,6 +16,8 @@ export const CREATE_ORDER = gql`
 		$orderType: String!
 		$deliveryAddress: String
 		$warehouseAddress: String
+		$status: String
+		$imagesByStatus: JSON
 	) {
 		createOrder(
 			designer: $designer
@@ -31,9 +33,13 @@ export const CREATE_ORDER = gql`
 			orderType: $orderType
 			deliveryAddress: $deliveryAddress
 			warehouseAddress: $warehouseAddress
+			status: $status
+			imagesByStatus: $imagesByStatus
 		) {
 			id
 			receivedOn
+			status
+			description
 			designer {
 				id
 				name
@@ -42,7 +48,6 @@ export const CREATE_ORDER = gql`
 				id
 				name
 			}
-			status
 		}
 	}
 `;

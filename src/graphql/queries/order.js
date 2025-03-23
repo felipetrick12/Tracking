@@ -24,7 +24,6 @@ export const GET_ALL_ORDERS = gql`
 			orderType
 			deliveryAddress
 			warehouseAddress
-			images
 			createdAt
 			updatedAt
 		}
@@ -49,7 +48,6 @@ export const GET_ORDERS_BY_DESIGNER = gql`
 			quantity
 			status
 			orderType
-			images
 			createdAt
 			updatedAt
 		}
@@ -78,7 +76,6 @@ export const GET_ORDERS_BY_ORGANIZATION = gql`
 			quantity
 			status
 			orderType
-			images
 			createdAt
 			updatedAt
 		}

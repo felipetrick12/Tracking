@@ -1,0 +1,349 @@
+'use client';
+
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CREATE_ORDER, UPDATE_ORDER } from '@/graphql/mutations/order';
+import { GET_USERS } from '@/graphql/queries/user';
+import { useMutation, useQuery } from '@apollo/client';
+import { format } from 'date-fns';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+
+const defaultFormData = {
+	description: '',
+	quantity: 1,
+	pieces: [],
+	carrier: '',
+	shipper: '',
+	itemNumber: '',
+	poNumber: '',
+	status: 'pending',
+	orderType: 'pickup',
+	deliveryAddress: '',
+	warehouseAddress: ''
+};
+
+const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
+	const isEditMode = !!order;
+	const [formData, setFormData] = useState({ ...defaultFormData });
+	const [createOrder] = useMutation(CREATE_ORDER);
+	const [updateOrder] = useMutation(UPDATE_ORDER);
+
+	const { data: userData } = useQuery(GET_USERS);
+
+	const [errors, setErrors] = useState({});
+
+	useEffect(() => {
+		if (order) {
+			setFormData({
+				...defaultFormData,
+				...order,
+				imagesByStatus: order.imagesByStatus || {
+					received: [],
+					shipped: [],
+					damaged: []
+				}
+			});
+		} else {
+			setFormData({ ...defaultFormData });
+		}
+	}, [order]);
+
+	const handleChange = (e) => {
+		const { name, value } = e.target;
+		setFormData((prev) => ({ ...prev, [name]: value }));
+	};
+
+	const handlePieceChange = (index, field, value) => {
+		const updatedPieces = [...formData.pieces];
+		updatedPieces[index][field] = value;
+		setFormData((prev) => ({ ...prev, pieces: updatedPieces }));
+	};
+
+	const addPiece = () => {
+		setFormData((prev) => ({ ...prev, pieces: [...prev.pieces, { name: '', quantity: 1 }] }));
+	};
+
+	const removePiece = (index) => {
+		const updatedPieces = formData.pieces.filter((_, i) => i !== index);
+		setFormData((prev) => ({ ...prev, pieces: updatedPieces }));
+	};
+
+	const handleImageUpload = async (e, status) => {
+		const files = Array.from(e.target.files);
+
+		const readFilesAsBase64 = await Promise.all(
+			files.map((file) => {
+				return new Promise((resolve, reject) => {
+					const reader = new FileReader();
+					reader.onloadend = () => resolve(reader.result);
+					reader.onerror = reject;
+					reader.readAsDataURL(file); // ✅ convierte a base64
+				});
+			})
+		);
+
+		setFormData((prev) => ({
+			...prev,
+			imagesByStatus: {
+				...prev.imagesByStatus,
+				[status]: [...(prev.imagesByStatus?.[status] || []), ...readFilesAsBase64]
+			}
+		}));
+	};
+
+	const validateForm = () => {
+		const newErrors = {};
+
+		if (!formData.designer) newErrors.designer = 'Designer is required';
+		if (!formData.client) newErrors.client = 'Client is required';
+		if (!formData.category) newErrors.category = 'Category is required';
+		if (!formData.quantity) newErrors.quantity = 'Quantity is required';
+		if (!formData.orderType) newErrors.orderType = 'Order type is required';
+
+		if (formData.orderType === 'delivery' && !formData.deliveryAddress) {
+			newErrors.deliveryAddress = 'Delivery address is required';
+		}
+		if (formData.orderType === 'warehouse' && !formData.warehouseAddress) {
+			newErrors.warehouseAddress = 'Warehouse address is required';
+		}
+
+		return newErrors;
+	};
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+
+		// Validate required fields
+		const validationErrors = validateForm();
+		if (Object.keys(validationErrors).length > 0) {
+			setErrors(validationErrors);
+			return;
+		}
+		setErrors({});
+
+		try {
+			if (isEditMode) {
+				await updateOrder({ variables: { orderId: order.id, input: formData } });
+				toast.success('✅ Order updated successfully!');
+			} else {
+				await createOrder({ variables: { ...formData } });
+				toast.success('✅ Order created successfully!');
+			}
+			setOpen(false);
+			onOrderUpdated();
+		} catch (error) {
+			console.log('error', error);
+			toast.error(`❌ Error: ${error.message}`);
+		}
+	};
+
+	const clients = userData?.getUsers?.filter((u) => u.role === 'client') || [];
+	const designers = userData?.getUsers?.filter((u) => u.role === 'designer') || [];
+
+	return (
+		<Dialog open={open} onOpenChange={setOpen}>
+			<DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+				<DialogHeader>
+					<DialogTitle>{isEditMode ? 'Edit Order' : 'Create Order'}</DialogTitle>
+				</DialogHeader>
+				<form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 text-sm">
+					{!isEditMode && (
+						<>
+							<div className="flex flex-col gap-2">
+								<Label>Client</Label>
+								<Select
+									value={formData.client}
+									onValueChange={(value) => setFormData((prev) => ({ ...prev, client: value }))}
+								>
+									<SelectTrigger className={errors.client ? 'border border-red-500' : ''}>
+										<SelectValue placeholder="Select client" />
+									</SelectTrigger>
+									<SelectContent>
+										{clients.map((client) => (
+											<SelectItem key={client.id} value={client.id}>
+												{client.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{errors.client && <p className="text-red-500 text-xs">{errors.client}</p>}
+							</div>
+
+							<div className="flex flex-col gap-2">
+								<Label>Designer</Label>
+								<Select
+									value={formData.designer}
+									onValueChange={(value) => setFormData((prev) => ({ ...prev, designer: value }))}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select designer" />
+									</SelectTrigger>
+									<SelectContent>
+										{designers.map((designer) => (
+											<SelectItem key={designer.id} value={designer.id}>
+												{designer.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{errors.designer && <p className="text-red-500 text-xs">{errors.designer}</p>}
+							</div>
+						</>
+					)}
+					{[
+						{ label: 'Description', name: 'description' },
+						{ label: 'Quantity', name: 'quantity', type: 'number' },
+						{ label: 'Carrier', name: 'carrier' },
+						{ label: 'Shipper', name: 'shipper' },
+						{ label: 'Item Number', name: 'itemNumber' },
+						{ label: 'PO Number', name: 'poNumber' }
+					].map(({ label, name, type = 'text' }) => (
+						<div key={name} className="flex flex-col gap-2">
+							<Label>{label}</Label>
+							<Input
+								type={type}
+								name={name}
+								value={formData[name]}
+								onChange={handleChange}
+								className={errors[name] ? 'border border-red-500' : ''}
+							/>
+							{errors[name] && <p className="text-red-500 text-xs">{errors[name]}</p>}
+						</div>
+					))}
+
+					<div className="flex flex-col gap-2">
+						<Label>Status</Label>
+						<Select
+							name="status"
+							value={formData.status}
+							onValueChange={(value) => setFormData((prev) => ({ ...prev, status: value }))}
+						>
+							<SelectTrigger className={errors.status ? 'border border-red-500' : ''}>
+								<SelectValue placeholder="Select status" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="pending">Pending</SelectItem>
+								<SelectItem value="received">Received</SelectItem>
+								<SelectItem value="processing">Processing</SelectItem>
+								<SelectItem value="delivered">Delivered</SelectItem>
+							</SelectContent>
+						</Select>
+						{errors.status && <p className="text-red-500 text-xs">{errors.status}</p>}
+					</div>
+
+					<div className="flex flex-col gap-2">
+						<Label>Order Type</Label>
+						<Select
+							name="orderType"
+							value={formData.orderType}
+							onValueChange={(value) => setFormData((prev) => ({ ...prev, orderType: value }))}
+						>
+							<SelectTrigger>
+								<SelectValue placeholder="Select type" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="pickup">Pickup</SelectItem>
+								<SelectItem value="warehouse">Warehouse</SelectItem>
+								<SelectItem value="delivery">Delivery</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+
+					{formData.orderType === 'delivery' && (
+						<div className="col-span-2 flex flex-col gap-2">
+							<Label>Delivery Address</Label>
+							<Input name="deliveryAddress" value={formData.deliveryAddress} onChange={handleChange} />
+						</div>
+					)}
+					{formData.orderType === 'warehouse' && (
+						<div className="col-span-2 flex flex-col gap-2">
+							<Label>Warehouse Address</Label>
+							<Input name="warehouseAddress" value={formData.warehouseAddress} onChange={handleChange} />
+						</div>
+					)}
+
+					{/* Image uploads by status */}
+					<div className="col-span-2">
+						{['received'].map((status) => (
+							<div key={status} className="col-span-2">
+								<Label>{`Images - ${status}`}</Label>
+								<Input type="file" multiple onChange={(e) => handleImageUpload(e, status)} />
+								<div className="flex gap-2 mt-2 flex-wrap">
+									{formData.imagesByStatus?.[status]?.map((src, index) => (
+										<img
+											key={index}
+											src={src}
+											alt={`${status}-${index}`}
+											className="w-20 h-20 object-cover rounded border"
+										/>
+									))}
+								</div>
+							</div>
+						))}
+					</div>
+
+					<div className="col-span-2">
+						<Label>Pieces</Label>
+						{formData.pieces &&
+							formData.pieces.map((piece, index) => (
+								<div key={index} className="flex items-center gap-2 mb-2">
+									<Input
+										placeholder="Name"
+										value={piece.name}
+										onChange={(e) => handlePieceChange(index, 'name', e.target.value)}
+										className="w-1/2"
+									/>
+									<Input
+										type="number"
+										placeholder="Qty"
+										value={piece.quantity}
+										onChange={(e) => handlePieceChange(index, 'quantity', e.target.value)}
+										className="w-1/3"
+									/>
+									<Button
+										type="button"
+										variant="ghost"
+										className="text-red-600 px-2"
+										onClick={() => removePiece(index)}
+									>
+										✕
+									</Button>
+								</div>
+							))}
+						<Button type="button" variant="link" onClick={addPiece} className="text-blue-600 text-sm mt-1">
+							+ Add Piece
+						</Button>
+					</div>
+
+					{isEditMode && (
+						<div className="col-span-2 text-xs text-muted-foreground mt-4">
+							<p>
+								<strong>Received On:</strong>{' '}
+								{/* {formData.receivedOn ? format(new Date(formData.receivedOn), 'PPP') : 'N/A'} */}
+							</p>
+							<p>
+								<strong>Created At:</strong>{' '}
+								{/* {formData.createdAt ? format(new Date(formData.createdAt), 'PPP') : 'N/A'} */}
+							</p>
+						</div>
+					)}
+
+					<div className="col-span-2 flex justify-end gap-4 mt-6">
+						<Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+							Cancel
+						</Button>
+						<Button type="submit" variant="default">
+							{isEditMode ? 'Update' : 'Create'}
+						</Button>
+					</div>
+				</form>
+			</DialogContent>
+		</Dialog>
+	);
+};
+
+export default AddOrderModal;
