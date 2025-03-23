@@ -31,10 +31,10 @@ export const GET_ROLES = gql`
 	}
 `;
 
-//✅ Get Designers
-export const GET_DESIGNERS = gql`
-	query GetUsersByRole($role: String!) {
-		getUsersByRole(role: $role) {
+//✅ Get Clients assigned to Designer
+export const GET_CLIENTS_BY_DESIGNER = gql`
+	query GetClientsByDesigner($designerId: ID!) {
+		getClientsByDesigner(designerId: $designerId) {
 			id
 			name
 		}

@@ -1,18 +1,40 @@
 'use client';
 
-import { CREATE_USER, UPDATE_USER } from '@/graphql/mutations/user';
-import { GET_ORGANIZATIONS } from '@/graphql/queries/organization';
-import { GET_ROLES, GET_USERS } from '@/graphql/queries/user';
 import { useMutation, useQuery } from '@apollo/client';
 import { UserIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
-const AddUserForm = ({ children, user = null, onUserChange, open, setOpen }) => {
-	const { data: rolesData } = useQuery(GET_ROLES, { pollInterval: 10000, skip: !open });
-	const { data: orgsData } = useQuery(GET_ORGANIZATIONS, { pollInterval: 10000, skip: !open });
-	const { data: clients } = useQuery(GET_USERS, { pollInterval: 10000, skip: !open });
+import { CREATE_USER, UPDATE_USER } from '@/graphql/mutations/user';
+import { GET_ME } from '@/graphql/queries/auth';
+import { GET_ORGANIZATIONS } from '@/graphql/queries/organization';
+import { GET_ROLES, GET_USERS_BY_ROLE } from '@/graphql/queries/user';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+
+const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen }) => {
+	const { data: rolesData } = useQuery(GET_ROLES);
+	const { data: orgsData } = useQuery(GET_ORGANIZATIONS);
+	const { data: userData } = useQuery(GET_ME);
+
+	const { toast } = useToast();
+
+	const {
+		data: designersData,
+		loading: loadingDesigners,
+		refetch: refetchDesigners
+	} = useQuery(GET_USERS_BY_ROLE, {
+		variables: {
+			role: 'designer',
+			organizationId: userData?.me?.activeOrganization?.id
+		},
+		skip: !userData?.me?.activeOrganization?.id
+	});
 
 	const [createUser] = useMutation(CREATE_USER);
 	const [updateUser] = useMutation(UPDATE_USER);
@@ -26,10 +48,14 @@ const AddUserForm = ({ children, user = null, onUserChange, open, setOpen }) => 
 		assignedTo: '',
 		photo: null
 	});
-	const [loading, setLoading] = useState(false);
-	const [previewImage, setPreviewImage] = useState(null);
 
+	const [errors, setErrors] = useState({});
+	const [previewImage, setPreviewImage] = useState(null);
+	const [loading, setLoading] = useState(false);
+
+	// ✅ Resetea el form al abrir si es nuevo
 	useEffect(() => {
+		if (!open) return;
 		if (user) {
 			setFormData({
 				name: user.name || '',
@@ -41,22 +67,59 @@ const AddUserForm = ({ children, user = null, onUserChange, open, setOpen }) => 
 				photo: null
 			});
 			setPreviewImage(user.photoUrl || null);
+		} else {
+			resetForm();
 		}
-	}, [user]);
+	}, [user, open]);
+
+	const resetForm = () => {
+		setFormData({
+			name: '',
+			email: '',
+			password: '',
+			role: '',
+			activeOrganization: '',
+			assignedTo: '',
+			photo: null
+		});
+		setPreviewImage(null);
+		setErrors({});
+	};
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
 
+	const validateForm = () => {
+		const newErrors = {};
+		if (!formData.name) newErrors.name = 'Name is required';
+		if (!formData.email) newErrors.email = 'Email is required';
+		if (!user && !formData.password) newErrors.password = 'Password is required';
+		if (!formData.role) newErrors.role = 'Role is required';
+		if (!formData.activeOrganization) newErrors.activeOrganization = 'Organization is required';
+		if (formData.role === 'client' && !formData.assignedTo) newErrors.assignedTo = 'Designer is required';
+
+		setErrors(newErrors);
+		return Object.keys(newErrors).length === 0;
+	};
+
 	const handleCancel = () => {
+		resetForm();
 		setOpen(false);
+		setUser(null);
 	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		setLoading(true);
+		setErrors({});
 
+		if (!validateForm()) {
+			toast.error('Please fix the errors in the form.');
+			return;
+		}
+
+		setLoading(true);
 		try {
 			let base64Image = null;
 			if (formData.photo) {
@@ -77,18 +140,25 @@ const AddUserForm = ({ children, user = null, onUserChange, open, setOpen }) => 
 			};
 
 			if (user) {
+				toast({
+					title: '✅ User updated successfully!',
+					icon: '🚀'
+				});
+
 				await updateUser({ variables: { id: user.id, ...variables } });
-				onUserChange();
-				toast.success('✅ User updated successfully!');
 			} else {
 				await createUser({ variables: { ...formData, photoUrl: base64Image } });
-				onUserChange();
-				toast.success('✅ User created successfully!');
+				toast({
+					title: '✅ User created successfully!',
+					icon: '🚀'
+				});
 			}
 
+			await refetch();
+			await refetchDesigners();
 			setOpen(false);
-		} catch (error) {
-			toast.error(`❌ Error: ${error.message}`);
+		} catch (err) {
+			toast.error(`❌ Error: ${err.message}`);
 		} finally {
 			setLoading(false);
 		}
@@ -96,151 +166,161 @@ const AddUserForm = ({ children, user = null, onUserChange, open, setOpen }) => 
 
 	return (
 		<>
-			{children ? (
-				children
-			) : (
-				<button className="bg-blue-500 text-white px-3 py-1 rounded" onClick={() => setOpen(true)}>
-					Add User
-				</button>
-			)}
+			{children ? children : <Button onClick={() => setOpen(true)}>Add User</Button>}
+			<Dialog open={open} onOpenChange={setOpen}>
+				<DialogContent className="max-w-4xl">
+					<DialogHeader>
+						<DialogTitle>{user ? 'Edit User' : 'Create User'}</DialogTitle>
+					</DialogHeader>
 
-			{open && (
-				<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-					<div className="bg-white p-10 rounded-lg shadow-lg w-[930px]">
-						<h2 className="text-xl font-bold mb-4 text-gray-800">{user ? 'Edit User' : 'Create User'}</h2>
+					<form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+						{/* Avatar */}
+						<div className="flex flex-col items-center space-y-4">
+							<Avatar className="w-32 h-32">
+								<AvatarImage src={previewImage || undefined} />
+								<AvatarFallback>
+									<UserIcon className="w-6 h-6 text-gray-400" />
+								</AvatarFallback>
+							</Avatar>
 
-						<form onSubmit={handleSubmit} className="flex flex-col gap-6">
-							<div className="flex gap-6">
-								<div className="w-1/4 items-start justify-start">
-									<div className="relative w-44 h-44 flex flex-col items-center justify-center cursor-pointer rounded border border-gray-300">
-										{previewImage ? (
-											<img
-												src={previewImage}
-												alt="Preview"
-												className="w-full h-full object-cover p-6"
-											/>
-										) : (
-											<UserIcon className="w-8 h-8 text-gray-400" />
-										)}
-										<input
-											type="file"
-											className="absolute inset-0 opacity-0 cursor-pointer"
-											accept="image/*"
-											onChange={(e) => {
-												const file = e.target.files[0];
-												if (file) {
-													setPreviewImage(URL.createObjectURL(file));
-													setFormData((prev) => ({ ...prev, photo: file }));
-												}
-											}}
-										/>
-									</div>
-								</div>
-								<div className="w-3/4 space-y-4">
-									{/* 🟡 First Row */}
-									<div className="flex w-full gap-4 flex-wrap">
-										<div className="flex flex-col gap-2 w-2/2">
-											<label className="text-gray-700 font-medium text-sm">Full Name</label>
-											<input
-												type="text"
-												name="name"
-												placeholder="Full Name"
-												className="border border-gray-300 p-2 rounded-md text-[14px] focus:border-black focus:outline-none transition-all duration-300"
-												onChange={handleChange}
-												value={formData.name}
-												required
-											/>
-										</div>
+							<Input
+								type="file"
+								accept="image/*"
+								onChange={(e) => {
+									const file = e.target.files[0];
+									if (file) {
+										setPreviewImage(URL.createObjectURL(file));
+										setFormData((prev) => ({ ...prev, photo: file }));
+									}
+								}}
+							/>
+						</div>
 
-										<div className="flex flex-col gap-2 w-2/2">
-											<label className="text-gray-700 font-medium text-sm">Email</label>
-											<input
-												type="email"
-												name="email"
-												placeholder="Email"
-												className="border border-gray-300 p-2 rounded-md text-[14px] focus:border-black focus:outline-none transition-all duration-300"
-												onChange={handleChange}
-												value={formData.email}
-												required
-											/>
-										</div>
-									</div>
-
-									{/* 🟡 Second Row */}
-									<div className="flex gap-4">
-										{!user && (
-											<div className="flex flex-col gap-2 w-full">
-												<label className="text-gray-700 font-medium text-sm">Password</label>
-												<input
-													type="password"
-													name="password"
-													placeholder="Password"
-													className="border border-gray-300 p-2 rounded-md text-[14px] focus:border-black focus:outline-none transition-all duration-300"
-													onChange={handleChange}
-													value={formData.password}
-													required
-												/>
-											</div>
-										)}
-
-										<div className="flex flex-col gap-2 w-full">
-											<label className="text-gray-700 font-medium text-sm">Role</label>
-											<select
-												name="role"
-												value={formData.role}
-												onChange={handleChange}
-												className="border border-gray-300 p-2 rounded-md text-[14px] focus:border-black focus:outline-none transition-all duration-300"
-												required
-											>
-												<option value="">Select Role</option>
-												{rolesData?.getTypes.map((role) => (
-													<option key={role.id} value={role.name}>
-														{role.name}
-													</option>
-												))}
-											</select>
-										</div>
-
-										<div className="flex flex-col gap-2">
-											<label className="text-gray-700 font-medium text-sm">Organization</label>
-											<select
-												name="activeOrganization"
-												value={formData.activeOrganization}
-												onChange={handleChange}
-												className="border border-gray-300 p-2 rounded-md text-[14px] focus:border-black focus:outline-none transition-all duration-300"
-											>
-												<option value="">Select Organization</option>
-												{orgsData?.getOrganizations.map((org) => (
-													<option key={org.id} value={org.id}>
-														{org.name}
-													</option>
-												))}
-											</select>
-										</div>
-									</div>
-								</div>
+						{/* Form */}
+						<div className="space-y-4">
+							{/* Name */}
+							<div>
+								<Label>Name</Label>
+								<Input
+									name="name"
+									value={formData.name}
+									onChange={handleChange}
+									placeholder="Full Name"
+									className={errors.name && 'border-red-500'}
+								/>
+								{errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
 							</div>
 
-							<div className="flex justify-end gap-4">
-								<button
-									type="button"
-									onClick={handleCancel}
-									className="bg-gray-500 text-white px-6 py-2 rounded-md"
-								>
-									Cancel
-								</button>
-								<button
-									type="submit"
-									className="bg-black text-white px-6 py-2 rounded-md"
-									disabled={loading}
-								>
-									{loading ? 'Saving...' : 'Save'}
-								</button>
+							{/* Email */}
+							<div>
+								<Label>Email</Label>
+								<Input
+									type="email"
+									name="email"
+									value={formData.email}
+									onChange={handleChange}
+									placeholder="Email"
+									className={errors.email && 'border-red-500'}
+								/>
+								{errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
 							</div>
-						</form>
-					</div>
-				</div>
-			)}
+
+							{/* Password */}
+							{!user && (
+								<div>
+									<Label>Password</Label>
+									<Input
+										type="password"
+										name="password"
+										value={formData.password}
+										onChange={handleChange}
+										placeholder="Password"
+										className={errors.password && 'border-red-500'}
+									/>
+									{errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+								</div>
+							)}
+
+							{/* Role */}
+							<div>
+								<Label>Role</Label>
+								<Select
+									value={formData.role}
+									onValueChange={(value) => setFormData((prev) => ({ ...prev, role: value }))}
+								>
+									<SelectTrigger className={errors.role && 'border-red-500'}>
+										<SelectValue placeholder="Select role" />
+									</SelectTrigger>
+									<SelectContent>
+										{rolesData?.getTypes.map((role) => (
+											<SelectItem key={role.id} value={role.name}>
+												{role.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
+							</div>
+
+							{/* Assigned Designer */}
+							<div>
+								<Label>Assign Designer</Label>
+								<Select
+									value={formData.assignedTo}
+									onValueChange={(value) => setFormData((prev) => ({ ...prev, assignedTo: value }))}
+								>
+									<SelectTrigger className={errors.assignedTo && 'border-red-500'}>
+										<SelectValue placeholder="Select designer" />
+									</SelectTrigger>
+									<SelectContent>
+										{designersData?.getUsersByRole.map((designer) => (
+											<SelectItem key={designer.id} value={designer.id}>
+												{designer.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{errors.assignedTo && <p className="text-red-500 text-sm mt-1">{errors.assignedTo}</p>}
+							</div>
+
+							{/* Organization */}
+							<div>
+								<Label>Organization</Label>
+								<Select
+									value={formData.activeOrganization}
+									onValueChange={(value) =>
+										setFormData((prev) => ({ ...prev, activeOrganization: value }))
+									}
+								>
+									<SelectTrigger className={errors.activeOrganization && 'border-red-500'}>
+										<SelectValue placeholder="Select organization" />
+									</SelectTrigger>
+									<SelectContent>
+										{orgsData?.getOrganizations.map((org) => (
+											<SelectItem key={org.id} value={org.id}>
+												{org.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{errors.activeOrganization && (
+									<p className="text-red-500 text-sm mt-1">{errors.activeOrganization}</p>
+								)}
+							</div>
+						</div>
+
+						{/* Buttons */}
+						<div className="col-span-2 flex justify-end gap-4">
+							<Button type="button" variant="secondary" onClick={handleCancel}>
+								Cancel
+							</Button>
+							<Button type="submit" disabled={loading}>
+								{loading ? 'Saving...' : 'Save'}
+							</Button>
+						</div>
+					</form>
+				</DialogContent>
+			</Dialog>
 		</>
 	);
 };

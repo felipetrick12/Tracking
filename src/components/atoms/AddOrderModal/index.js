@@ -6,9 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CREATE_ORDER, UPDATE_ORDER } from '@/graphql/mutations/order';
-import { GET_USERS } from '@/graphql/queries/user';
+import { GET_CLIENTS_BY_DESIGNER, GET_USERS } from '@/graphql/queries/user';
 import { useMutation, useQuery } from '@apollo/client';
-import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -33,6 +32,9 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 	const [updateOrder] = useMutation(UPDATE_ORDER);
 
 	const { data: userData } = useQuery(GET_USERS);
+	const { data: aaaa } = useQuery(GET_CLIENTS_BY_DESIGNER);
+
+	console.log('Aaa', aaaa);
 
 	const [errors, setErrors] = useState({});
 
@@ -141,18 +143,41 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 		}
 	};
 
-	const clients = userData?.getUsers?.filter((u) => u.role === 'client') || [];
+	const clients = [];
+
 	const designers = userData?.getUsers?.filter((u) => u.role === 'designer') || [];
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
-				<DialogHeader>
-					<DialogTitle>{isEditMode ? 'Edit Order' : 'Create Order'}</DialogTitle>
+			<DialogContent className="max-w-4xl max-h-[90vh] overflow-auto p-10">
+				<DialogHeader className={'my-3'}>
+					<DialogTitle className="text-3xl font-semibold">
+						{isEditMode ? 'Edit Order' : 'Create Order'}
+					</DialogTitle>
 				</DialogHeader>
 				<form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 text-sm">
 					{!isEditMode && (
 						<>
+							<div className="flex flex-col gap-2">
+								<Label>Designer</Label>
+								<Select
+									value={formData.designer}
+									onValueChange={(value) => setFormData((prev) => ({ ...prev, designer: value }))}
+								>
+									<SelectTrigger className={errors.designer ? 'border border-red-500' : ''}>
+										<SelectValue placeholder="Select designer" />
+									</SelectTrigger>
+									<SelectContent>
+										{designers.map((designer) => (
+											<SelectItem key={designer.id} value={designer.id}>
+												{designer.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{errors.designer && <p className="text-red-500 text-xs">{errors.designer}</p>}
+							</div>
+
 							<div className="flex flex-col gap-2">
 								<Label>Client</Label>
 								<Select
@@ -174,23 +199,23 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 							</div>
 
 							<div className="flex flex-col gap-2">
-								<Label>Designer</Label>
+								<Label>Category</Label>
 								<Select
-									value={formData.designer}
-									onValueChange={(value) => setFormData((prev) => ({ ...prev, designer: value }))}
+									value={formData.category}
+									onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
 								>
-									<SelectTrigger>
-										<SelectValue placeholder="Select designer" />
+									<SelectTrigger className={errors.category ? 'border border-red-500' : ''}>
+										<SelectValue placeholder="Select category" />
 									</SelectTrigger>
 									<SelectContent>
-										{designers.map((designer) => (
-											<SelectItem key={designer.id} value={designer.id}>
-												{designer.name}
+										{userData?.getTypes?.map((type) => (
+											<SelectItem key={type.id} value={type.id}>
+												{type.name}
 											</SelectItem>
 										))}
 									</SelectContent>
 								</Select>
-								{errors.designer && <p className="text-red-500 text-xs">{errors.designer}</p>}
+								{errors.category && <p className="text-red-500 text-xs">{errors.category}</p>}
 							</div>
 						</>
 					)}
@@ -216,26 +241,6 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 					))}
 
 					<div className="flex flex-col gap-2">
-						<Label>Status</Label>
-						<Select
-							name="status"
-							value={formData.status}
-							onValueChange={(value) => setFormData((prev) => ({ ...prev, status: value }))}
-						>
-							<SelectTrigger className={errors.status ? 'border border-red-500' : ''}>
-								<SelectValue placeholder="Select status" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="pending">Pending</SelectItem>
-								<SelectItem value="received">Received</SelectItem>
-								<SelectItem value="processing">Processing</SelectItem>
-								<SelectItem value="delivered">Delivered</SelectItem>
-							</SelectContent>
-						</Select>
-						{errors.status && <p className="text-red-500 text-xs">{errors.status}</p>}
-					</div>
-
-					<div className="flex flex-col gap-2">
 						<Label>Order Type</Label>
 						<Select
 							name="orderType"
@@ -250,16 +255,17 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 								<SelectItem value="warehouse">Warehouse</SelectItem>
 								<SelectItem value="delivery">Delivery</SelectItem>
 							</SelectContent>
+							{errors.orderType && <p className="text-red-500 text-xs">{errors.orderType}</p>}
 						</Select>
 					</div>
 
-					{formData.orderType === 'delivery' && (
+					{formData?.orderType === 'delivery' && (
 						<div className="col-span-2 flex flex-col gap-2">
 							<Label>Delivery Address</Label>
 							<Input name="deliveryAddress" value={formData.deliveryAddress} onChange={handleChange} />
 						</div>
 					)}
-					{formData.orderType === 'warehouse' && (
+					{formData?.orderType === 'warehouse' && (
 						<div className="col-span-2 flex flex-col gap-2">
 							<Label>Warehouse Address</Label>
 							<Input name="warehouseAddress" value={formData.warehouseAddress} onChange={handleChange} />
@@ -267,10 +273,10 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 					)}
 
 					{/* Image uploads by status */}
-					<div className="col-span-2">
+					<div className="col-span-2 mt-10">
 						{['received'].map((status) => (
-							<div key={status} className="col-span-2">
-								<Label>{`Images - ${status}`}</Label>
+							<div key={status} className="col-span-2 flex flex-col gap-2">
+								<Label>{`Images - Order`}</Label>
 								<Input type="file" multiple onChange={(e) => handleImageUpload(e, status)} />
 								<div className="flex gap-2 mt-2 flex-wrap">
 									{formData.imagesByStatus?.[status]?.map((src, index) => (
@@ -286,7 +292,7 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 						))}
 					</div>
 
-					<div className="col-span-2">
+					<div className="col-span-2 flex flex-col gap-2">
 						<Label>Pieces</Label>
 						{formData.pieces &&
 							formData.pieces.map((piece, index) => (

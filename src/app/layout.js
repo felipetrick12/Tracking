@@ -1,4 +1,5 @@
 import AuthenticatedLayout from '@/components/atoms/AuthenticatedLayout';
+import { Toaster } from '@/components/ui/toaster';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ApolloWrapper } from './ApolloWrapper';
 import './globals.css';
@@ -29,6 +30,7 @@ export default function RootLayout({ children }) {
 				<ApolloWrapper>
 					<AuthenticatedLayout>{children}</AuthenticatedLayout>
 				</ApolloWrapper>
+				<Toaster />
 			</body>
 		</html>
 	);
