@@ -30,6 +30,7 @@ const LoginPage = () => {
 				userVar(data.login.user);
 				// await client.resetStore();
 				router.push('/dashboard');
+				router.refresh();
 			}
 		},
 		onError: (error) => {
