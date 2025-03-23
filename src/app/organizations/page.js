@@ -3,75 +3,59 @@
 import AddOrganizationForm from '@/components/molecules/AddOrganizationForm';
 import { gql, useQuery } from '@apollo/client';
 
-// ✅ GraphQL Query to Get Organizations
-const GET_ORGANIZATIONS = gql`
-	query GetOrganizations {
-		getOrganizations {
-			id
-			name
-			address
-			city
-			state
-			zipCode
-			phone
-			createdBy {
-				id
-				name
-			}
-		}
-	}
-`;
+import { Card } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { GET_ORGANIZATIONS } from '@/graphql/queries/organization';
 
 const OrganizationsPage = () => {
-	// ✅ Use Apollo's `useQuery` to fetch organizations
 	const { data, loading, error, refetch } = useQuery(GET_ORGANIZATIONS);
 
-	// ✅ Function to refresh data when an organization is created
 	const handleOrganizationCreated = () => {
-		refetch(); // 🔄 Re-fetch organizations after adding a new one
+		refetch();
 	};
 
 	return (
-		<div className="p-6">
-			<h1 className="text-2xl font-bold mb-4">Organizations</h1>
+		<div className="p-6 space-y-6">
+			<div className="flex items-center justify-between">
+				<h1 className="text-2xl font-bold">Organizations</h1>
+				<AddOrganizationForm onOrganizationCreated={handleOrganizationCreated} />
+			</div>
 
-			{/* 🔹 Add Organization Button */}
-			<AddOrganizationForm onOrganizationCreated={handleOrganizationCreated} />
+			<Separator />
 
-			{/* 🔹 Loading State */}
-			{loading && <p className="text-gray-500">Loading organizations...</p>}
-
-			{/* 🔹 Error Handling */}
+			{loading && <p className="text-muted-foreground">Loading organizations...</p>}
 			{error && <p className="text-red-500">Error: {error.message}</p>}
 
-			{/* 🔹 Organizations Table */}
-			{!loading && !error && data?.getOrganizations.length > 0 ? (
-				<table className="w-full border-collapse border border-gray-300 mt-4">
-					<thead>
-						<tr className="bg-gray-100">
-							<th className="border p-2">Name</th>
-							<th className="border p-2">Address</th>
-							<th className="border p-2">City</th>
-							<th className="border p-2">State</th>
-							<th className="border p-2">Zip Code</th>
-							<th className="border p-2">Phone</th>
-						</tr>
-					</thead>
-					<tbody>
-						{data.getOrganizations.map((org) => (
-							<tr key={org.id} className="border">
-								<td className="border p-2">{org.name}</td>
-								<td className="border p-2">{org.address || 'N/A'}</td>
-								<td className="border p-2">{org.city || 'N/A'}</td>
-								<td className="border p-2">{org.state || 'N/A'}</td>
-								<td className="border p-2">{org.zipCode || 'N/A'}</td>
-								<td className="border p-2">{org.phone || 'N/A'}</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
+			{!loading && !error && data?.getOrganizations?.length > 0 ? (
+				<Card className="p-4">
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>Name</TableHead>
+								<TableHead>Address</TableHead>
+								<TableHead>City</TableHead>
+								<TableHead>State</TableHead>
+								<TableHead>Zip Code</TableHead>
+								<TableHead>Phone</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{data.getOrganizations.map((org) => (
+								<TableRow key={org.id}>
+									<TableCell>{org.name}</TableCell>
+									<TableCell>{org.address || 'N/A'}</TableCell>
+									<TableCell>{org.city || 'N/A'}</TableCell>
+									<TableCell>{org.state || 'N/A'}</TableCell>
+									<TableCell>{org.zipCode || 'N/A'}</TableCell>
+									<TableCell>{org.phone || 'N/A'}</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</Card>
 			) : (
-				!loading && <p className="text-gray-500">No organizations found.</p>
+				!loading && <p className="text-muted-foreground">No organizations found.</p>
 			)}
 		</div>
 	);

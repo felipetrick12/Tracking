@@ -1,43 +1,18 @@
 'use client';
 
-import { gql, useMutation } from '@apollo/client';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { CREATE_ORGANIZATION } from '@/graphql/queries/organization';
+import { useToast } from '@/hooks/use-toast';
+import { useMutation } from '@apollo/client';
 import { useState } from 'react';
-
-// ✅ GraphQL Mutation to Create an Organization
-const CREATE_ORGANIZATION = gql`
-	mutation CreateOrganization(
-		$name: String!
-		$address: String
-		$city: String
-		$state: String
-		$zipCode: String
-		$phone: String
-		$notes: String
-		$admins: [ID]
-	) {
-		createOrganization(
-			name: $name
-			address: $address
-			city: $city
-			state: $state
-			zipCode: $zipCode
-			phone: $phone
-			notes: $notes
-			admins: $admins
-		) {
-			id
-			name
-			address
-			city
-			state
-			zipCode
-			phone
-		}
-	}
-`;
 
 const AddOrganizationForm = ({ onOrganizationCreated }) => {
 	const [isOpen, setIsOpen] = useState(false);
+	const { toast } = useToast();
+
 	const [formData, setFormData] = useState({
 		name: '',
 		address: '',
@@ -48,20 +23,19 @@ const AddOrganizationForm = ({ onOrganizationCreated }) => {
 		notes: ''
 	});
 
-	// ✅ Apollo Mutation Hook
 	const [createOrganization, { loading, error }] = useMutation(CREATE_ORGANIZATION, {
-		onCompleted: (data) => {
-			onOrganizationCreated(data.createOrganization); // 🔄 Update table
-			setIsOpen(false); // Close modal after success
+		onCompleted: async (data) => {
+			await onOrganizationCreated(data.createOrganization);
+			toast({ title: '✅ Organization created successfully!' });
+			setIsOpen(false);
+			setFormData({ name: '', address: '', city: '', state: '', zipCode: '', phone: '', notes: '' });
 		}
 	});
 
-	// ✅ Handle Input Change
 	const handleChange = (e) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
 
-	// ✅ Handle Form Submission
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		await createOrganization({ variables: formData });
@@ -69,83 +43,40 @@ const AddOrganizationForm = ({ onOrganizationCreated }) => {
 
 	return (
 		<>
-			{/* 🔹 Open Modal Button */}
-			<button onClick={() => setIsOpen(true)} className="bg-blue-500 text-white px-4 py-2 rounded-md">
-				Add Organization
-			</button>
+			<Button onClick={() => setIsOpen(true)}>Add Organization</Button>
+			<Dialog open={isOpen} onOpenChange={setIsOpen}>
+				<DialogContent className="max-w-md">
+					<DialogHeader>
+						<DialogTitle>Create Organization</DialogTitle>
+					</DialogHeader>
 
-			{/* 🔹 Modal */}
-			{isOpen && (
-				<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-					<div className="bg-white p-6 rounded-lg shadow-lg w-96">
-						<h2 className="text-lg font-bold mb-4">Create Organization</h2>
-						<form onSubmit={handleSubmit} className="space-y-3">
-							<input
-								type="text"
-								name="name"
-								placeholder="Organization Name"
-								className="border p-2 w-full"
-								onChange={handleChange}
-								required
-							/>
-							<input
-								type="text"
-								name="address"
-								placeholder="Address"
-								className="border p-2 w-full"
-								onChange={handleChange}
-							/>
-							<input
-								type="text"
-								name="city"
-								placeholder="City"
-								className="border p-2 w-full"
-								onChange={handleChange}
-							/>
-							<input
-								type="text"
-								name="state"
-								placeholder="State"
-								className="border p-2 w-full"
-								onChange={handleChange}
-							/>
-							<input
-								type="text"
-								name="zipCode"
-								placeholder="Zip Code"
-								className="border p-2 w-full"
-								onChange={handleChange}
-							/>
-							<input
-								type="text"
-								name="phone"
-								placeholder="Phone"
-								className="border p-2 w-full"
-								onChange={handleChange}
-							/>
-							<textarea
-								name="notes"
-								placeholder="Notes"
-								className="border p-2 w-full"
-								onChange={handleChange}
-							></textarea>
+					<form onSubmit={handleSubmit} className="space-y-4 mt-4">
+						<Input
+							required
+							name="name"
+							placeholder="Organization Name"
+							value={formData.name}
+							onChange={handleChange}
+						/>
+						<Input name="address" placeholder="Address" value={formData.address} onChange={handleChange} />
+						<Input name="city" placeholder="City" value={formData.city} onChange={handleChange} />
+						<Input name="state" placeholder="State" value={formData.state} onChange={handleChange} />
+						<Input name="zipCode" placeholder="Zip Code" value={formData.zipCode} onChange={handleChange} />
+						<Input name="phone" placeholder="Phone" value={formData.phone} onChange={handleChange} />
+						<Textarea name="notes" placeholder="Notes" value={formData.notes} onChange={handleChange} />
 
-							{/* 🔹 Submit Button */}
-							<button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md">
-								{loading ? 'Creating...' : 'Create'}
-							</button>
-
-							{/* 🔹 Close Modal Button */}
-							<button onClick={() => setIsOpen(false)} className="ml-2 bg-gray-300 px-4 py-2 rounded-md">
+						<div className="flex justify-end gap-2">
+							<Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
 								Cancel
-							</button>
-
-							{/* 🔹 Error Message */}
-							{error && <p className="text-red-500">{error.message}</p>}
-						</form>
-					</div>
-				</div>
-			)}
+							</Button>
+							<Button type="submit" disabled={loading}>
+								{loading ? 'Creating...' : 'Create'}
+							</Button>
+						</div>
+						{error && <p className="text-red-500 text-sm">{error.message}</p>}
+					</form>
+				</DialogContent>
+			</Dialog>
 		</>
 	);
 };

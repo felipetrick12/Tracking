@@ -7,9 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CREATE_ORDER, UPDATE_ORDER } from '@/graphql/mutations/order';
 import { GET_CLIENTS_BY_DESIGNER, GET_USERS } from '@/graphql/queries/user';
+import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQuery } from '@apollo/client';
 import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
 
 const defaultFormData = {
 	description: '',
@@ -28,6 +28,7 @@ const defaultFormData = {
 const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 	const isEditMode = !!order;
 	const [formData, setFormData] = useState({ ...defaultFormData });
+	const { toast } = useToast();
 	const [createOrder] = useMutation(CREATE_ORDER);
 	const [updateOrder] = useMutation(UPDATE_ORDER);
 
@@ -130,10 +131,10 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 		try {
 			if (isEditMode) {
 				await updateOrder({ variables: { orderId: order.id, input: formData } });
-				toast.success('✅ Order updated successfully!');
+				toast({ title: '✅ Order updated successfully!' });
 			} else {
 				await createOrder({ variables: { ...formData } });
-				toast.success('✅ Order created successfully!');
+				toast({ title: '✅ Order created successfully!' });
 			}
 			setOpen(false);
 			onOrderUpdated();

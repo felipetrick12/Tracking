@@ -4,6 +4,7 @@ import AddUserForm from '@/components/molecules/AddUserForm';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { GET_USERS } from '@/graphql/queries/user';
 import { useQuery } from '@apollo/client';
@@ -41,6 +42,9 @@ const UsersPage = () => {
 					</Button>
 				</AddUserForm>
 			</div>
+
+			<Separator />
+
 			<Card className="p-4 overflow-x-auto">
 				<Table>
 					<TableHeader>
