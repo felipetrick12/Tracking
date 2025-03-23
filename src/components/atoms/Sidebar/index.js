@@ -22,7 +22,7 @@ const ROUTES = [
 	{ path: '/dashboard', label: 'Home', icon: Home, roles: ['admin', 'designer', 'user'] },
 	{ path: '/clients', label: 'Clients', icon: Users, roles: ['admin'] },
 	{ path: '/settings', label: 'Settings', icon: Cog, roles: ['admin', 'designer'] },
-	{ path: '/orders', label: 'Orders', icon: ClipboardList, roles: ['designer'] },
+	{ path: '/orders', label: 'Orders', icon: ClipboardList, roles: ['admin', 'designer'] },
 	{ path: '/users', label: 'Manage Users', icon: UserRound, roles: ['admin'] },
 	{ path: '/organizations', label: 'Organizations', icon: Building, roles: ['admin'] },
 	{ path: '/permissions', label: 'Permissions', icon: ShieldCheck, roles: ['admin'] }
@@ -58,11 +58,11 @@ function AppSidebar() {
 					<SidebarGroupLabel>Navigation</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{ROUTES.filter((route) => allowedRoutes.includes(route.path)).map((route) => {
+							{ROUTES.filter((route) => allowedRoutes.includes(route.path))?.map((route) => {
 								const isActive = pathname === route.path;
 
 								return (
-									<SidebarMenuItem key={route.path} active={isActive}>
+									<SidebarMenuItem key={route.path}>
 										<SidebarMenuButton asChild>
 											<Link
 												href={route.path}

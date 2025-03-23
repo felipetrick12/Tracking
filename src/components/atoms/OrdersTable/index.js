@@ -24,8 +24,8 @@ const OrdersTable = ({ user }) => {
 
 	return (
 		<>
-			<div className="flex justify-between items-center">
-				<h1 className="text-2xl font-bold mb-5 text-primary">Orders</h1>
+			<div className="flex justify-between items-center my-5">
+				<h1 className="text-2xl font-bold text-primary">Orders</h1>
 
 				<Button
 					onClick={() => {
@@ -105,7 +105,7 @@ const OrdersTable = ({ user }) => {
 				</Table>
 			</Card>
 
-			<AddOrderModal open={modalOpen} setOpen={setModalOpen} order={selectedOrder} onOrderUpdated={refetch} />
+			<AddOrderModal open={modalOpen} setOpen={setModalOpen} order={selectedOrder} refetch={refetch} />
 		</>
 	);
 };

@@ -28,7 +28,7 @@ const Dashboard = () => {
 		}
 	});
 
-	console.log('DATA', data);
+	console.log('user', data);
 
 	const user = userVar(); // 🔥 Obtener el usuario actualizado de userVar()
 
@@ -57,8 +57,6 @@ const Dashboard = () => {
 			console.error('Logout error:', err);
 		}
 	};
-
-	console.log('User in Dashboard:', user);
 
 	// 🔥 Renderizar dashboard según el rol del usuario
 	const renderDashboard = () => {

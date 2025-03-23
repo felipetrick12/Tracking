@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CREATE_ORDER, UPDATE_ORDER } from '@/graphql/mutations/order';
+import { GET_CATEGORIES } from '@/graphql/queries/type';
 import { GET_CLIENTS_BY_DESIGNER, GET_USERS } from '@/graphql/queries/user';
 import { useToast } from '@/hooks/use-toast';
-import { useMutation, useQuery } from '@apollo/client';
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import { useEffect, useState } from 'react';
 
 const defaultFormData = {
@@ -25,19 +26,25 @@ const defaultFormData = {
 	warehouseAddress: ''
 };
 
-const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
+const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 	const isEditMode = !!order;
-	const [formData, setFormData] = useState({ ...defaultFormData });
 	const { toast } = useToast();
-	const [createOrder] = useMutation(CREATE_ORDER);
-	const [updateOrder] = useMutation(UPDATE_ORDER);
+	const [createOrder, { loading: creating }] = useMutation(CREATE_ORDER);
+	const [updateOrder, { loading: updating }] = useMutation(UPDATE_ORDER);
 
 	const { data: userData } = useQuery(GET_USERS);
-	const { data: aaaa } = useQuery(GET_CLIENTS_BY_DESIGNER);
+	const { data: categoriesData } = useQuery(GET_CATEGORIES);
+	const [fetchClients, { data: clientsData, loading: clientsLoading }] = useLazyQuery(GET_CLIENTS_BY_DESIGNER);
 
-	console.log('Aaa', aaaa);
-
+	const [selectedDesigner, setSelectedDesigner] = useState('');
+	const [formData, setFormData] = useState({ ...defaultFormData });
 	const [errors, setErrors] = useState({});
+
+	useEffect(() => {
+		if (selectedDesigner) {
+			fetchClients({ variables: { designerId: selectedDesigner } });
+		}
+	}, [selectedDesigner]);
 
 	useEffect(() => {
 		if (order) {
@@ -117,10 +124,29 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 		return newErrors;
 	};
 
+	const sanitizeOrderInput = (data) => {
+		const clone = { ...data };
+		const fieldsToRemove = ['__typename', 'id', 'createdAt', 'updatedAt', 'receivedOn'];
+
+		fieldsToRemove.forEach((field) => delete clone[field]);
+
+		// Asegura que estos campos sean solo IDs
+		clone.designer = data.designer?.id || data.designer;
+		clone.client = data.client?.id || data.client;
+		clone.category = data.category?.id || data.category;
+
+		// Sanitiza pieces
+		clone.pieces = (data.pieces || []).map((p) => ({
+			name: p.name,
+			quantity: Number(p.quantity)
+		}));
+
+		return clone;
+	};
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 
-		// Validate required fields
 		const validationErrors = validateForm();
 		if (Object.keys(validationErrors).length > 0) {
 			setErrors(validationErrors);
@@ -129,24 +155,28 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 		setErrors({});
 
 		try {
+			const cleanInput = sanitizeOrderInput(formData);
+
+			console.log('cleanInput', cleanInput);
+
 			if (isEditMode) {
-				await updateOrder({ variables: { orderId: order.id, input: formData } });
+				await updateOrder({ variables: { orderId: order.id, input: cleanInput } });
 				toast({ title: '✅ Order updated successfully!' });
 			} else {
-				await createOrder({ variables: { ...formData } });
+				await createOrder({ variables: { ...cleanInput } });
 				toast({ title: '✅ Order created successfully!' });
 			}
 			setOpen(false);
-			onOrderUpdated();
+			refetch();
 		} catch (error) {
 			console.log('error', error);
 			toast.error(`❌ Error: ${error.message}`);
 		}
 	};
 
-	const clients = [];
-
+	const clients = clientsData?.getClientsByDesigner || [];
 	const designers = userData?.getUsers?.filter((u) => u.role === 'designer') || [];
+	const categories = categoriesData?.getTypes || [];
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
@@ -163,7 +193,10 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 								<Label>Designer</Label>
 								<Select
 									value={formData.designer}
-									onValueChange={(value) => setFormData((prev) => ({ ...prev, designer: value }))}
+									onValueChange={(value) => {
+										setFormData((prev) => ({ ...prev, designer: value }));
+										setSelectedDesigner(value);
+									}}
 								>
 									<SelectTrigger className={errors.designer ? 'border border-red-500' : ''}>
 										<SelectValue placeholder="Select designer" />
@@ -186,14 +219,26 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 									onValueChange={(value) => setFormData((prev) => ({ ...prev, client: value }))}
 								>
 									<SelectTrigger className={errors.client ? 'border border-red-500' : ''}>
-										<SelectValue placeholder="Select client" />
+										<SelectValue
+											placeholder={clientsLoading ? 'Loading clients...' : 'Select client'}
+										/>
 									</SelectTrigger>
 									<SelectContent>
-										{clients.map((client) => (
-											<SelectItem key={client.id} value={client.id}>
-												{client.name}
+										{clientsLoading ? (
+											<SelectItem disabled value="loading">
+												Loading clients...
 											</SelectItem>
-										))}
+										) : clients.length > 0 ? (
+											clients.map((client) => (
+												<SelectItem key={client.id} value={client.id}>
+													{client.name}
+												</SelectItem>
+											))
+										) : (
+											<SelectItem disabled value="none">
+												No clients found
+											</SelectItem>
+										)}
 									</SelectContent>
 								</Select>
 								{errors.client && <p className="text-red-500 text-xs">{errors.client}</p>}
@@ -209,7 +254,7 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 										<SelectValue placeholder="Select category" />
 									</SelectTrigger>
 									<SelectContent>
-										{userData?.getTypes?.map((type) => (
+										{categories?.map((type) => (
 											<SelectItem key={type.id} value={type.id}>
 												{type.name}
 											</SelectItem>
@@ -340,11 +385,22 @@ const AddOrderModal = ({ open, setOpen, order = null, onOrderUpdated }) => {
 					)}
 
 					<div className="col-span-2 flex justify-end gap-4 mt-6">
-						<Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+						<Button
+							type="button"
+							variant="secondary"
+							onClick={() => setOpen(false)}
+							disabled={creating || updating}
+						>
 							Cancel
 						</Button>
-						<Button type="submit" variant="default">
-							{isEditMode ? 'Update' : 'Create'}
+						<Button type="submit" variant="default" disabled={creating || updating}>
+							{creating || updating
+								? isEditMode
+									? 'Updating...'
+									: 'Creating...'
+								: isEditMode
+								? 'Update'
+								: 'Create'}
 						</Button>
 					</div>
 				</form>

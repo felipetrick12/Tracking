@@ -54,10 +54,38 @@ export const CREATE_ORDER = gql`
 
 // ✅ Actualizar una orden existente
 export const UPDATE_ORDER = gql`
-	mutation UpdateOrder($orderId: ID!, $status: String!) {
-		updateOrderStatus(orderId: $orderId, status: $status) {
+	mutation UpdateOrder($orderId: ID!, $input: OrderInput) {
+		updateOrder(orderId: $orderId, input: $input) {
 			id
 			status
+			description
+			quantity
+			orderType
+			deliveryAddress
+			warehouseAddress
+			pieces {
+				name
+				quantity
+			}
+			carrier
+			shipper
+			itemNumber
+			poNumber
+			imagesByStatus
+			designer {
+				id
+				name
+			}
+			client {
+				id
+				name
+			}
+			category {
+				id
+				name
+			}
+			createdAt
+			updatedAt
 		}
 	}
 `;

@@ -6,6 +6,23 @@ export const GET_ALL_ORDERS = gql`
 		getOrders {
 			id
 			receivedOn
+			status
+			description
+			quantity
+			pieces {
+				name
+				quantity
+			}
+			carrier
+			shipper
+			itemNumber
+			poNumber
+			orderType
+			deliveryAddress
+			warehouseAddress
+			imagesByStatus
+			createdAt
+			updatedAt
 			designer {
 				id
 				name
@@ -14,18 +31,10 @@ export const GET_ALL_ORDERS = gql`
 				id
 				name
 			}
-			description
 			category {
 				id
 				name
 			}
-			quantity
-			status
-			orderType
-			deliveryAddress
-			warehouseAddress
-			createdAt
-			updatedAt
 		}
 	}
 `;
