@@ -46,7 +46,7 @@ const LoginPage = () => {
 		<div className="flex min-h-screen items-center justify-center bg-white px-4">
 			<Card className="w-full max-w-sm shadow-md">
 				<CardHeader className="text-center">
-					<Image src="/assets/Images/logo.png" alt="Logo" width={100} height={100} className="mx-auto" />
+					<Image src="/assets/images/logo.png" alt="Logo" width={100} height={100} className="mx-auto" />
 					<CardTitle className="text-2xl font-bold text-primary mt-2">Pinnacle Management</CardTitle>
 				</CardHeader>
 				<CardContent>
