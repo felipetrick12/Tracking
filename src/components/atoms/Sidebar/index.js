@@ -42,7 +42,7 @@ function AppSidebar() {
 			{/* 🔥 Custom Header Logo Area */}
 			<div className="flex items-center gap-3 mb-2 border-b px-4 py-3">
 				<Image
-					src={'/assets/Images/logo.png'}
+					src={'/assets/images/logo.png'}
 					alt="Pinnacle Logo"
 					width={36}
 					height={36}

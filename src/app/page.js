@@ -2,7 +2,7 @@
 
 import { LOGIN_MUTATION } from '@/graphql/mutations';
 import { useToast } from '@/hooks/use-toast';
-import { useApolloClient, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -16,7 +16,6 @@ import { setCookie } from 'nookies';
 
 const LoginPage = () => {
 	const router = useRouter();
-	const client = useApolloClient();
 	const { toast } = useToast();
 
 	const [email, setEmail] = useState('');
@@ -29,7 +28,6 @@ const LoginPage = () => {
 			if (data?.login?.user) {
 				toast({ title: '✅ Login Successful!' });
 
-				// 💾 Guardar cookie accesible para middleware
 				setCookie(null, 'token', data.login.token, {
 					path: '/',
 					secure: process.env.NODE_ENV === 'production',
