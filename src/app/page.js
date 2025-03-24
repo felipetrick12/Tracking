@@ -2,9 +2,10 @@
 
 import { LOGIN_MUTATION } from '@/graphql/mutations';
 import { useToast } from '@/hooks/use-toast';
-import { useMutation } from '@apollo/client';
+import { useApolloClient, useMutation } from '@apollo/client';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { setCookie } from 'nookies';
 import { useState } from 'react';
 import { userVar } from './ApolloConfig';
 
@@ -12,10 +13,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { setCookie } from 'nookies';
+
+import { Eye, EyeOff } from 'lucide-react';
 
 const LoginPage = () => {
 	const router = useRouter();
+	const client = useApolloClient();
 	const { toast } = useToast();
 
 	const [email, setEmail] = useState('');
@@ -28,6 +31,7 @@ const LoginPage = () => {
 			if (data?.login?.user) {
 				toast({ title: '✅ Login Successful!' });
 
+				// 🧠 Set cookies
 				setCookie(null, 'token', data.login.token, {
 					path: '/',
 					secure: process.env.NODE_ENV === 'production',
@@ -40,9 +44,11 @@ const LoginPage = () => {
 					sameSite: 'lax'
 				});
 
+				// 🧠 Set Apollo user
 				userVar(data.login.user);
-				router.push('/dashboard');
-				router.refresh();
+
+				// 🔄
+				window.location.href = '/dashboard';
 			}
 		},
 		onError: (error) => {
@@ -94,10 +100,10 @@ const LoginPage = () => {
 								/>
 								<button
 									type="button"
-									className="absolute right-2 top-1/2 -translate-y-1/2 text-xs"
+									className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
 									onClick={() => setShowPassword((prev) => !prev)}
 								>
-									{showPassword ? '🙈' : '👁️'}
+									{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
 								</button>
 							</div>
 						</div>
