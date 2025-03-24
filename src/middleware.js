@@ -7,36 +7,35 @@ const roleProtectedRoutes = {
 	admin: ['/dashboard', '/users', '/orders'],
 	designer: ['/dashboard', '/clients'],
 	client: ['/dashboard', '/clients']
-	// user: ['/dashboard']
 };
 
-const publicRoutes = ['/', '/register']; // Public pages
+const publicRoutes = ['/', '/register'];
 
 export default async function middleware(req) {
 	const token = req.cookies.get('token')?.value || null;
 	console.log('🔍 Checking route:', req.nextUrl.pathname);
 	console.log('🔑 Token:', token ? 'Exists' : 'Not Found');
 
-	// ✅ Allow public routes if user is NOT logged in
+	// ✅ Permitir rutas públicas
 	if (!token && publicRoutes.includes(req.nextUrl.pathname)) {
-		console.log('✅ Public route, access granted:', req.nextUrl.pathname);
+		console.log('✅ Public route, access granted');
 		return NextResponse.next();
 	}
 
-	// 🚀 If no token and trying to access a protected route, redirect to login
+	// ❌ Sin token en ruta protegida, redirige a home
 	if (!token) {
-		console.log('❌ No token, redirecting to home');
+		console.log('⛔ No token, redirecting');
 		const response = NextResponse.redirect(new URL('/', req.url));
-		response.cookies.delete('token'); // 🔥 Remove old token
-		response.cookies.delete('allowedRoutes'); // 🔥 Remove old routes
+		response.cookies.delete('token');
+		response.cookies.delete('allowedRoutes');
 		return response;
 	}
 
 	try {
-		// 🔥 Fetch user data from GraphQL
 		const { data } = await executeGraphQL(GET_ME, {}, token);
 
 		if (!data?.me) {
+			console.log('❌ Token inválido, borrando cookies');
 			const response = NextResponse.redirect(new URL('/', req.url));
 			response.cookies.delete('token');
 			response.cookies.delete('userData');
@@ -47,42 +46,40 @@ export default async function middleware(req) {
 		const role = data.me.role || 'user';
 		const allowedRoutes = roleProtectedRoutes[role] || [];
 
-		// ✅ Store token for client-side access (Apollo Client)
 		const response = NextResponse.next();
+
+		// 🍪 Cookies visibles para el cliente
 		response.cookies.set('token', token, {
-			httpOnly: false, // ✅ Allow client-side access
+			httpOnly: false,
 			secure: process.env.NODE_ENV === 'production',
 			sameSite: 'lax',
 			path: '/'
 		});
 
-		// ✅ Store user data in a cookie (JSON stringified)
 		response.cookies.set('userData', JSON.stringify(data.me), {
-			path: '/',
-			httpOnly: false, // ✅ Allow client-side access
-			sameSite: 'lax'
+			httpOnly: false,
+			sameSite: 'lax',
+			path: '/'
 		});
 
-		// ✅ Store allowed routes in a cookie (JSON stringified)
 		response.cookies.set('allowedRoutes', JSON.stringify(allowedRoutes), {
-			path: '/',
-			httpOnly: false, // ✅ Allow client-side access
-			sameSite: 'lax'
+			httpOnly: false,
+			sameSite: 'lax',
+			path: '/'
 		});
 
-		// ✅ Redirect users from login page if already authenticated
+		// Si está en login ("/") y ya está logueado, redirigir a dashboard
 		if (req.nextUrl.pathname === '/') {
 			return NextResponse.redirect(new URL('/dashboard', req.url));
 		}
 
 		return response;
 	} catch (error) {
-		console.error('⚠️ Error validating user:', error);
+		console.error('⚠️ Middleware error:', error);
 		return NextResponse.redirect(new URL('/', req.url));
 	}
 }
 
-// ✅ Apply middleware to relevant routes
 export const config = {
 	matcher: ['/dashboard', '/clients', '/users', '/organizations', '/orders', '/settings', '/permissions', '/']
 };

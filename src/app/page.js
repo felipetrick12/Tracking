@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { setCookie } from 'nookies';
 
 const LoginPage = () => {
 	const router = useRouter();
@@ -22,19 +23,36 @@ const LoginPage = () => {
 	const [password, setPassword] = useState('');
 	const [showPassword, setShowPassword] = useState(false);
 
-	const [login, { loading: loginLoading }] = useMutation(LOGIN_MUTATION, {
+	const [login] = useMutation(LOGIN_MUTATION, {
 		credentials: 'include',
 		onCompleted: async (data) => {
 			if (data?.login?.user) {
 				toast({ title: '✅ Login Successful!' });
+
+				// 💾 Guardar cookie accesible para middleware
+				setCookie(null, 'token', data.login.token, {
+					path: '/',
+					secure: process.env.NODE_ENV === 'production',
+					sameSite: 'lax'
+				});
+
+				setCookie(null, 'userData', JSON.stringify(data.login.user), {
+					path: '/',
+					secure: process.env.NODE_ENV === 'production',
+					sameSite: 'lax'
+				});
+
 				userVar(data.login.user);
-				// await client.resetStore();
 				router.push('/dashboard');
 				router.refresh();
 			}
 		},
 		onError: (error) => {
-			toast({ variant: 'destructive', title: '❌ Login Failed', description: error.message });
+			toast({
+				variant: 'destructive',
+				title: '❌ Login Failed',
+				description: error.message
+			});
 		}
 	});
 
