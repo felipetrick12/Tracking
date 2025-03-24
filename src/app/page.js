@@ -23,7 +23,7 @@ const LoginPage = () => {
 	const [password, setPassword] = useState('');
 	const [showPassword, setShowPassword] = useState(false);
 
-	const [login] = useMutation(LOGIN_MUTATION, {
+	const [login, { loading: loginLoading }] = useMutation(LOGIN_MUTATION, {
 		credentials: 'include',
 		onCompleted: async (data) => {
 			if (data?.login?.user) {

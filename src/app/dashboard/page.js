@@ -6,6 +6,7 @@ import { LOGOUT } from '@/graphql/mutations/auth';
 import { GET_ME } from '@/graphql/queries/auth';
 import { useMutation, useQuery } from '@apollo/client';
 import { useRouter } from 'next/navigation';
+import { destroyCookie } from 'nookies';
 import { useEffect, useState } from 'react';
 import { userVar } from '../ApolloConfig';
 
@@ -40,19 +41,21 @@ const Dashboard = () => {
 	// ✅ Función para cerrar sesión
 	const handleLogout = async () => {
 		try {
-			await logout();
+			await logout(); // Llama al resolver que borra cookies httpOnly desde el backend
 
-			// 🔥 Manually clear cookies in the browser
-			document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; max-age=0; path=/;';
-			document.cookie = 'allowedRoutes=; expires=Thu, 01 Jan 1970 00:00:00 UTC; max-age=0; path=/;';
-			document.cookie = 'userData=; expires=Thu, 01 Jan 1970 00:00:00 UTC; max-age=0; path=/;';
+			// 🧹 Borrar cookies visibles desde el frontend
+			destroyCookie(null, 'token');
+			destroyCookie(null, 'userData');
+			destroyCookie(null, 'allowedRoutes');
 
-			// 🚀 Redirect to home to trigger middleware
-			router.push('/');
-			router.refresh(); // 🔥 Ensure middleware runs and clears allowedRoutes
+			// 🧠 Resetear estado global (si usás uno)
 			userVar(null);
-		} catch (err) {
-			console.error('Logout error:', err);
+
+			// 🔁 Redirigir al login/home
+			router.push('/');
+			router.refresh();
+		} catch (error) {
+			console.error('Logout failed:', error);
 		}
 	};
 
