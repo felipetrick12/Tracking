@@ -2,6 +2,7 @@
 
 import { UserDropdown } from '@/components';
 import { AdminDashboard, ClientDashboard, SuperDashboard } from '@/components/molecules';
+import { roles } from '@/constants/roles';
 import { LOGOUT } from '@/graphql/mutations/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/hooks/useUser';
@@ -39,12 +40,12 @@ const Dashboard = () => {
 
 	const renderDashboard = () => {
 		switch (user.role) {
-			case 'superadmin':
+			case roles.SUPER_ADMIN:
 				return <SuperDashboard />;
-			case 'admin':
+			case roles.ADMIN:
 				return <AdminDashboard />;
-			case 'designer':
-			case 'client':
+			case roles.DESIGNER:
+			case roles.CLIENT:
 				return <ClientDashboard />;
 			default:
 				return <p>Unauthorized</p>;

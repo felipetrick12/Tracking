@@ -61,7 +61,6 @@ export const GET_USERS_BY_ROLE = gql`
 `;
 
 //Designer CLients
-
 export const GET_MY_CLIENTS = gql`
 	query GetMyClients {
 		getMyClients {

@@ -1,32 +1,25 @@
-import { AddOrderModal } from '@/components/molecules';
+import { AddClientOrderModal } from '@/components/molecules';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { GET_ALL_ORDERS } from '@/graphql/queries/order';
-import { useQuery } from '@apollo/client';
 import { format } from 'date-fns';
 import { useState } from 'react';
 
-const OrdersTable = ({ orders, refetchMetrics }) => {
-	const { data, loading, error, refetch } = useQuery(GET_ALL_ORDERS);
+const OrdersClientTable = ({ orders, selectedClient, refetch }) => {
 	const [selectedOrder, setSelectedOrder] = useState(null);
 	const [modalOpen, setModalOpen] = useState(false);
-
-	if (loading) return <p className="text-center text-muted-foreground">Loading orders...</p>;
-	if (error) return <p className="text-center text-destructive">Error fetching orders</p>;
 
 	if (!orders || orders.length === 0) {
 		return <p className="text-center text-muted-foreground">No orders found.</p>;
 	}
 
 	const refetchData = async () => {
-		await refetchMetrics();
 		await refetch();
 	};
 
 	return (
 		<>
-			<div className="flex justify-between items-center">
+			<div className="flex justify-between items-center mb-4">
 				<h1 className="text-2xl font-bold text-primary">Orders</h1>
 
 				<Button
@@ -43,17 +36,11 @@ const OrdersTable = ({ orders, refetchMetrics }) => {
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead>Item #</TableHead>
 							<TableHead>Client</TableHead>
-							<TableHead>Designer</TableHead>
-							<TableHead>Type</TableHead>
 							<TableHead>Qty</TableHead>
 							<TableHead>Status</TableHead>
 							<TableHead>Category</TableHead>
 							<TableHead>PO #</TableHead>
-							<TableHead>Carrier</TableHead>
-							<TableHead>Shipper</TableHead>
-							<TableHead>Address</TableHead>
 							<TableHead>Pieces</TableHead>
 							<TableHead>Received</TableHead>
 							<TableHead>Created</TableHead>
@@ -67,21 +54,12 @@ const OrdersTable = ({ orders, refetchMetrics }) => {
 								className="cursor-pointer hover:bg-muted transition"
 								onClick={() => setSelectedOrder(order)}
 							>
-								<TableCell>{order.itemNumber || '—'}</TableCell>
 								<TableCell>{order.client?.name || 'N/A'}</TableCell>
-								<TableCell>{order.designer?.name || 'N/A'}</TableCell>
-								<TableCell>{order.orderType}</TableCell>
 								<TableCell>{order.quantity}</TableCell>
 								<TableCell>{order.status}</TableCell>
 								<TableCell>{order.category?.name || '—'}</TableCell>
 								<TableCell>{order.poNumber || '—'}</TableCell>
-								<TableCell>{order.carrier || '—'}</TableCell>
-								<TableCell>{order.shipper || '—'}</TableCell>
-								<TableCell>
-									{order.orderType === 'delivery'
-										? order.deliveryAddress
-										: order.warehouseAddress || '—'}
-								</TableCell>
+
 								<TableCell>
 									{order.pieces?.length
 										? order.pieces.map((p) => `${p.quantity}x ${p.name}`).join(', ')
@@ -107,9 +85,15 @@ const OrdersTable = ({ orders, refetchMetrics }) => {
 				</Table>
 			</Card>
 
-			<AddOrderModal open={modalOpen} setOpen={setModalOpen} order={selectedOrder} refetch={refetchData} />
+			<AddClientOrderModal
+				open={modalOpen}
+				setOpen={setModalOpen}
+				order={selectedOrder}
+				selectedClient={selectedClient}
+				refetch={refetchData}
+			/>
 		</>
 	);
 };
 
-export default OrdersTable;
+export default OrdersClientTable;

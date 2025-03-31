@@ -7,7 +7,7 @@ import { GET_ME } from '@/graphql/queries/auth';
 import { GET_ALL_ORDERS } from '@/graphql/queries/order';
 import { GET_MY_CLIENTS } from '@/graphql/queries/user';
 
-import { OrdersTable } from '@/components/atoms';
+import OrdersClientTable from '@/components/atoms/OrdersClientTable';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -22,8 +22,12 @@ const ClientOrdersDashboard = () => {
 		skip: !userId
 	});
 
-	const { data: ordersData, loading: loadingOrders } = useQuery(GET_ALL_ORDERS, {
-		variables: { clientId: selectedClient },
+	const {
+		data: ordersData,
+		loading: loadingOrders,
+		refetch
+	} = useQuery(GET_ALL_ORDERS, {
+		variables: { clientId: selectedClient?.id },
 		skip: !selectedClient
 	});
 
@@ -44,9 +48,14 @@ const ClientOrdersDashboard = () => {
 						{clients.map((client, index) => (
 							<div key={client.id}>
 								<Button
-									variant={selectedClient === client.id ? 'default' : 'ghost'}
+									variant={selectedClient?.id === client.id ? 'default' : 'ghost'}
 									className="w-full justify-start mb-1"
-									onClick={() => setSelectedClient(client.id)}
+									onClick={() =>
+										setSelectedClient({
+											id: client.id,
+											name: client.name
+										})
+									}
 								>
 									{client.name}
 								</Button>
@@ -59,7 +68,7 @@ const ClientOrdersDashboard = () => {
 
 			{/* Orders content */}
 			<div className="flex-1 p-6 overflow-auto">
-				<OrdersTable orders={orders} />
+				<OrdersClientTable orders={orders} selectedClient={selectedClient} refetch={refetch} />
 			</div>
 		</div>
 	);

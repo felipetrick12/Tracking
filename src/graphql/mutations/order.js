@@ -13,7 +13,7 @@ export const CREATE_ORDER = gql`
 		$shipper: String
 		$itemNumber: String
 		$poNumber: String
-		$orderType: String!
+		$orderType: String
 		$deliveryAddress: String
 		$warehouseAddress: String
 		$status: String

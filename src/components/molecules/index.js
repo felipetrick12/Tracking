@@ -1,3 +1,5 @@
+import AddClientOrderModal from './AddClientOrderModal';
+import AddOrderModal from './AddOrderModal';
 import AddOrganizationForm from './AddOrganizationForm';
 import AddTypeModal from './AddTypeModal';
 import AddUserForm from './AddUserForm';
@@ -5,4 +7,13 @@ import AdminDashboard from './AdminDashboard';
 import ClientDashboard from './ClientDashboard';
 import SuperDashboard from './SuperDashboard';
 
-export { AddOrganizationForm, AddTypeModal, AddUserForm, AdminDashboard, ClientDashboard, SuperDashboard };
+export {
+	AddClientOrderModal,
+	AddOrderModal,
+	AddOrganizationForm,
+	AddTypeModal,
+	AddUserForm,
+	AdminDashboard,
+	ClientDashboard,
+	SuperDashboard
+};

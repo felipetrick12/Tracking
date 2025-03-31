@@ -42,7 +42,7 @@ const SuperDashboard = () => {
 				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
 					<AddTypeModal icon={() => <Boxes size={40} />} title="Create Category" typeLabel="category" />
 
-					<AddTypeModal icon={() => <UserCog size={40} />} title="Create Role" typeLabel="role" />
+					<AddTypeModal icon={() => <UserCog size={40} />} title="Create Role" typeLabel="roles" />
 				</div>
 
 				<OrdersTable
