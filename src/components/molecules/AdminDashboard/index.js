@@ -1,4 +1,5 @@
-import { CardMetrics, OrdersTable } from '@/components/atoms';
+import { CardMetrics } from '@/components/atoms';
+import { OrdersTable } from '@/components/molecules';
 import { GET_ADMIN_METRICS } from '@/graphql/queries/metrics';
 import { useQuery } from '@apollo/client';
 
@@ -29,12 +30,7 @@ const AdminDashboard = () => {
 			{/* Metrics for Admin */}
 			<CardMetrics metrics={ADMIN_METRICS} />
 
-			<OrdersTable
-				user={{
-					role: 'admin'
-				}}
-				refetchMetrics={refetch}
-			/>
+			<OrdersTable refetchMetrics={refetch} />
 		</div>
 	);
 };

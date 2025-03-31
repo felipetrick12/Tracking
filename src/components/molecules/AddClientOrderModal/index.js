@@ -53,7 +53,9 @@ const AddClientOrderModal = ({ open, setOpen, order = null, refetch, selectedCli
 					received: [],
 					shipped: [],
 					damaged: []
-				}
+				},
+				designer: userId,
+				client: selectedClient.id
 			});
 		} else if (userId && selectedClient?.id) {
 			setFormData((prev) => ({
@@ -109,9 +111,9 @@ const AddClientOrderModal = ({ open, setOpen, order = null, refetch, selectedCli
 
 	const validateForm = () => {
 		const newErrors = {};
-		if (!formData.client) newErrors.client = 'Client is required';
+		if (!formData.description) newErrors.description = 'Description is required';
 		if (!formData.category) newErrors.category = 'Category is required';
-		if (!formData.quantity) newErrors.quantity = 'Quantity is required';
+		if (formData.imagesByStatus.pending.length === 0) newErrors.images = 'Images are required';
 		return newErrors;
 	};
 
@@ -120,6 +122,12 @@ const AddClientOrderModal = ({ open, setOpen, order = null, refetch, selectedCli
 		const fieldsToRemove = ['__typename', 'id', 'createdAt', 'updatedAt', 'receivedOn'];
 		fieldsToRemove.forEach((field) => delete clone[field]);
 		clone.pieces = (data.pieces || []).map((p) => ({ name: p.name, quantity: Number(p.quantity) }));
+		clone.quantity = parseInt(data.quantity, 10);
+
+		// Eliminar designer y client si son cadenas vacías
+		if (!data.designer) delete clone.designer;
+		if (!data.client) delete clone.client;
+
 		return clone;
 	};
 
@@ -142,17 +150,23 @@ const AddClientOrderModal = ({ open, setOpen, order = null, refetch, selectedCli
 				await createOrder({ variables: { ...cleanInput } });
 				toast({ title: '✅ Order created successfully!' });
 			}
-			setOpen(false);
+			handleCancel();
 			refetch();
 		} catch (error) {
 			toast({ title: `❌ Error: ${error.message}` });
 		}
 	};
 
+	const handleCancel = () => {
+		setOpen(false);
+		setFormData({ ...defaultFormDataDesigner });
+		setErrors({});
+	};
+
 	const categories = categoriesData?.getTypes || [];
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog open={open} onOpenChange={handleCancel}>
 			<DialogContent className="max-w-4xl max-h-[90vh] overflow-auto p-10">
 				<DialogHeader className={'my-3'}>
 					<DialogTitle className="text-2xl font-semibold">
@@ -169,7 +183,6 @@ const AddClientOrderModal = ({ open, setOpen, order = null, refetch, selectedCli
 									disabled
 									className="bg-muted cursor-not-allowed"
 								/>
-								{errors.client && <p className="text-red-500 text-xs">{errors.client}</p>}
 							</div>
 
 							<div className="flex flex-col gap-2">
@@ -196,9 +209,7 @@ const AddClientOrderModal = ({ open, setOpen, order = null, refetch, selectedCli
 
 					{[
 						{ label: 'Description', name: 'description' },
-						{ label: 'Quantity', name: 'quantity', type: 'number' },
-						{ label: 'Item Number', name: 'itemNumber' },
-						{ label: 'PO Number', name: 'poNumber' }
+						{ label: 'Quantity', name: 'quantity', type: 'number' }
 					].map(({ label, name, type = 'text' }) => (
 						<div key={name} className="flex flex-col gap-2">
 							<Label>{label}</Label>
@@ -221,6 +232,7 @@ const AddClientOrderModal = ({ open, setOpen, order = null, refetch, selectedCli
 							multiple
 							onChange={(e) => handleImageUpload(e, 'pending')}
 						/>
+						{errors.images && <p className="text-red-500 text-xs mt-2">{errors.images}</p>}
 						<div className="flex gap-2 mt-2 flex-wrap">
 							{formData.imagesByStatus?.pending?.map((src, index) => (
 								<img
@@ -269,7 +281,7 @@ const AddClientOrderModal = ({ open, setOpen, order = null, refetch, selectedCli
 						<Button
 							type="button"
 							variant="secondary"
-							onClick={() => setOpen(false)}
+							onClick={() => handleCancel()}
 							disabled={creating || updating}
 						>
 							Cancel
