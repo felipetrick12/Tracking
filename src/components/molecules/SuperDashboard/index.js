@@ -1,7 +1,9 @@
 import { CardMetrics, OrdersTable } from '@/components/atoms';
+import { AddTypeModal } from '@/components/molecules';
 import { GET_SUPERADMIN_METRICS } from '@/graphql/queries/metrics';
 import { GET_ALL_ORDERS } from '@/graphql/queries/order';
 import { useQuery } from '@apollo/client';
+import { Boxes, UserCog } from 'lucide-react';
 
 const SuperDashboard = () => {
 	const { data, loading, error, refetch } = useQuery(GET_SUPERADMIN_METRICS);
@@ -33,16 +35,24 @@ const SuperDashboard = () => {
 
 	return (
 		<div>
-			{/* Metrics for Admin */}
-			<CardMetrics metrics={ADMIN_METRICS} />
+			<div className="space-y-10">
+				{/* Metrics for Admin */}
+				<CardMetrics metrics={ADMIN_METRICS} />
 
-			<OrdersTable
-				orders={orders?.getOrders}
-				user={{
-					role: 'admin'
-				}}
-				refetchMetrics={refetch}
-			/>
+				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+					<AddTypeModal icon={() => <Boxes size={40} />} title="Create Category" typeLabel="category" />
+
+					<AddTypeModal icon={() => <UserCog size={40} />} title="Create Role" typeLabel="role" />
+				</div>
+
+				<OrdersTable
+					orders={orders?.getOrders}
+					user={{
+						role: 'admin'
+					}}
+					refetchMetrics={refetch}
+				/>
+			</div>
 		</div>
 	);
 };
