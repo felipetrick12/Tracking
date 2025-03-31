@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CREATE_ORDER, UPDATE_ORDER } from '@/graphql/mutations/order';
-import { GET_ME } from '@/graphql/queries/auth';
 import { GET_CATEGORIES } from '@/graphql/queries/type';
 import { GET_CLIENTS_BY_DESIGNER, GET_USERS } from '@/graphql/queries/user';
 import { useToast } from '@/hooks/use-toast';
@@ -165,11 +164,17 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 				await createOrder({ variables: { ...cleanInput } });
 				toast({ title: '✅ Order created successfully!' });
 			}
-			setOpen(false);
+			handleCancel();
 			refetch();
 		} catch (error) {
 			toast({ title: `❌ Error: ${error.message}` });
 		}
+	};
+
+	const handleCancel = () => {
+		setOpen(false);
+		setFormData({ ...defaultFormData });
+		setErrors({});
 	};
 
 	const clients = clientsData?.getClientsByDesigner || [];
@@ -179,7 +184,7 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 	const categories = categoriesData?.getTypes || [];
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog open={open} onOpenChange={handleCancel}>
 			<DialogContent className="max-w-4xl max-h-[90vh] overflow-auto p-10">
 				<DialogHeader className={'my-3'}>
 					<DialogTitle className="text-2xl font-semibold">
@@ -325,7 +330,7 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="pending">Pending</SelectItem>
-								<SelectItem value="receiving">Receiving</SelectItem>
+								<SelectItem value="received">Received</SelectItem>
 								<SelectItem value="processing">Processing</SelectItem>
 								<SelectItem value="delivered">Delivered</SelectItem>
 								<SelectItem value="damaged">Damaged</SelectItem>
@@ -471,7 +476,7 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 						<Button
 							type="button"
 							variant="secondary"
-							onClick={() => setOpen(false)}
+							onClick={() => handleCancel()}
 							disabled={creating || updating}
 						>
 							Cancel

@@ -7,7 +7,6 @@ import { Boxes, UserCog } from 'lucide-react';
 
 const SuperDashboard = () => {
 	const { data, loading, error, refetch } = useQuery(GET_SUPERADMIN_METRICS);
-	const { data: orders } = useQuery(GET_ALL_ORDERS);
 
 	if (loading) return <p>Loading metrics...</p>;
 	if (error) return <p>Error fetching metrics</p>;
@@ -45,7 +44,7 @@ const SuperDashboard = () => {
 					<AddTypeModal icon={() => <UserCog size={40} />} title="Create Role" typeLabel="roles" />
 				</div>
 
-				<OrdersTable orders={orders?.getOrders} refetchMetrics={refetch} />
+				<OrdersTable refetchMetrics={refetch} />
 			</div>
 		</div>
 	);

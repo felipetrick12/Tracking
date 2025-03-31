@@ -21,7 +21,7 @@ const QRCodeScanner = ({ onScan }) => {
 	};
 
 	const handleError = (err) => {
-		console.error('QRCodeScanner - handleError called with error:', err);
+		console.log('QRCodeScanner - handleError called with error:', err);
 	};
 
 	return (
@@ -33,7 +33,7 @@ const QRCodeScanner = ({ onScan }) => {
 };
 
 const InventoryTable = () => {
-	const { data, loading, error } = useQuery(GET_INVENTORY_ITEMS);
+	const { data, loading, error, refetch } = useQuery(GET_INVENTORY_ITEMS);
 
 	const inventory = data?.getInventoryItems || [];
 	const [scannedItem, setScannedItem] = useState(null);
@@ -48,6 +48,19 @@ const InventoryTable = () => {
 
 	if (loading) return <p className="text-center text-muted-foreground">Loading inventory...</p>;
 	if (error) return <p className="text-center text-destructive">Error loading inventory.</p>;
+
+	const getStatusRowClass = (status) => {
+		switch (status) {
+			case 'assigned':
+				return 'bg-green-50'; // pastel verde
+			case 'damaged':
+				return 'bg-red-50'; // pastel rojo
+			case 'stored':
+				return 'bg-blue-50'; // pastel azul
+			default:
+				return 'bg-purple-50'; // pastel morado
+		}
+	};
 
 	return (
 		<>
@@ -75,7 +88,10 @@ const InventoryTable = () => {
 					</TableHeader>
 					<TableBody>
 						{inventory.map((item) => (
-							<TableRow key={item._id}>
+							<TableRow
+								key={item._id}
+								className={`cursor-pointer transition hover:bg-muted ${getStatusRowClass(item.status)}`}
+							>
 								<TableCell>{item._id}</TableCell>
 								<TableCell>{item.qrCode}</TableCell>
 								<TableCell>
@@ -136,7 +152,7 @@ const InventoryTable = () => {
 					open={modalOpen}
 					setOpen={setModalOpen}
 					item={selectedItem}
-					// refetchInventory={refetch}
+					refetchInventory={refetch}
 				/>
 			)}
 		</>

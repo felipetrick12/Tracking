@@ -17,11 +17,11 @@ const OrdersClientTable = ({ orders, selectedClient, refetch }) => {
 		switch (status) {
 			case 'pending':
 				return 'bg-yellow-50'; // pastel amarillo
-			case 'received':
+			case 'processing':
 				return 'bg-green-50'; // pastel verde
 			case 'damaged':
 				return 'bg-red-50'; // pastel rojo
-			case 'processing':
+			case 'received':
 				return 'bg-blue-50'; // pastel azul
 			case 'complete':
 			case 'delivered':

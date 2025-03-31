@@ -21,10 +21,9 @@ import {
 const ROUTES = [
 	{ path: '/dashboard', label: 'Home', icon: Home, roles: ['superadmin', 'admin', 'designer'] },
 	{ path: '/clients', label: 'Clients', icon: Users, roles: ['designer', 'client'] },
-	{ path: '/orders', label: 'Orders', icon: ClipboardList, roles: ['superadmin', 'admin'] },
-	{ path: '/users', label: 'Manage Users', icon: UserRound, roles: ['superadmin', 'admin'] },
-	{ path: '/organizations', label: 'Organizations', icon: Building, roles: ['superadmin'] },
-	{ path: '/inventory', label: 'Inventory', icon: Building, roles: ['superadmin'] }
+	{ path: '/users', label: 'Users', icon: UserRound, roles: ['superadmin', 'admin'] },
+	{ path: '/inventory', label: 'Inventory', icon: Building, roles: ['superadmin'] },
+	{ path: '/organizations', label: 'Organizations', icon: Building, roles: ['superadmin'] }
 ];
 
 function AppSidebar() {

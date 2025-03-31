@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UPDATE_INVENTORY_ITEM } from '@/graphql/queries/inventory';
 import { GET_ORDER_IMAGES } from '@/graphql/queries/order';
 import { useToast } from '@/hooks/use-toast';
-import { useMutation, useQuery } from '@apollo/client';
+import { useLazyQuery, useMutation } from '@apollo/client';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 
@@ -19,14 +19,10 @@ const AddInventoryItemModal = ({ open, setOpen, item, refetchInventory }) => {
 		image: item?.image || ''
 	});
 
-	console.log('item', item);
-
-	const { data: orderData, loading: orderLoading } = useQuery(GET_ORDER_IMAGES, {
-		variables: { orderId: item?.order },
+	const { data: orderData, loading: orderLoading } = useLazyQuery(GET_ORDER_IMAGES, {
+		variables: { orderId: item?.order?.id },
 		skip: !item?.order
 	});
-
-	console.log('orderData', orderData);
 
 	const [selectedImage, setSelectedImage] = useState('');
 	const [orderImages, setOrderImages] = useState([]);
@@ -34,9 +30,15 @@ const AddInventoryItemModal = ({ open, setOpen, item, refetchInventory }) => {
 	useEffect(() => {
 		if (item) {
 			setFormData({
-				location: item.location,
-				status: item.status,
-				image: item.image
+				location: item.location || '', // Si item.location es null, usa ''
+				status: item.status || 'stored', // Si item.status es null, usa 'stored'
+				image: item.image || '' // Si item.image es null, usa ''
+			});
+		} else {
+			setFormData({
+				location: '',
+				status: 'stored',
+				image: ''
 			});
 		}
 	}, [item]);
