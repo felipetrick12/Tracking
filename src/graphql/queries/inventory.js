@@ -6,6 +6,9 @@ export const GET_INVENTORY_ITEMS = gql`
 			_id
 			name
 			status
+			order {
+				id
+			}
 			location
 			qrCode
 			qrCodeImage
@@ -15,6 +18,18 @@ export const GET_INVENTORY_ITEMS = gql`
 			clientName
 			designerName
 			createdAt
+		}
+	}
+`;
+
+export const UPDATE_INVENTORY_ITEM = gql`
+	mutation UpdateInventoryItem($id: ID!, $input: InventoryUpdateInput!) {
+		updateInventoryItem(id: $id, input: $input) {
+			_id
+			name
+			location
+			status
+			image
 		}
 	}
 `;

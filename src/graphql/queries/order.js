@@ -120,3 +120,14 @@ export const GET_ORDERS_BY_ORGANIZATION = gql`
 		}
 	}
 `;
+
+export const GET_ORDER_IMAGES = gql`
+	query GetOrderImages($orderId: ID!) {
+		getOrderImages(id: $orderId) {
+			pending
+			received
+			shipped
+			damaged
+		}
+	}
+`;
