@@ -7,7 +7,7 @@ import { GET_ME } from '@/graphql/queries/auth';
 import { GET_ALL_ORDERS } from '@/graphql/queries/order';
 import { GET_MY_CLIENTS } from '@/graphql/queries/user';
 
-import OrdersClientTable from '@/components/atoms/OrdersClientTable';
+import { OrdersClientTable } from '@/components/molecules';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';

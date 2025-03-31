@@ -165,7 +165,6 @@ const AddUserForm = ({ children, user = null, setUser, refetch, open, setOpen })
 			}
 
 			await refetch();
-			await refetchDesigners();
 			setOpen(false);
 		} catch (err) {
 			toast({ title: `❌ Error: ${err.message}` });

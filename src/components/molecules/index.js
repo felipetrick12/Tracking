@@ -1,3 +1,5 @@
+import OrdersClientTable from '../molecules/OrdersClientTable';
+import OrdersTable from '../molecules/OrdersTable';
 import AddClientOrderModal from './AddClientOrderModal';
 import AddOrderModal from './AddOrderModal';
 import AddOrganizationForm from './AddOrganizationForm';
@@ -15,5 +17,7 @@ export {
 	AddUserForm,
 	AdminDashboard,
 	ClientDashboard,
+	OrdersClientTable,
+	OrdersTable,
 	SuperDashboard
 };

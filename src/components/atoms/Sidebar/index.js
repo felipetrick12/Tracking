@@ -23,8 +23,8 @@ const ROUTES = [
 	{ path: '/clients', label: 'Clients', icon: Users, roles: ['designer', 'client'] },
 	{ path: '/orders', label: 'Orders', icon: ClipboardList, roles: ['superadmin', 'admin'] },
 	{ path: '/users', label: 'Manage Users', icon: UserRound, roles: ['superadmin', 'admin'] },
-	{ path: '/organizations', label: 'Organizations', icon: Building, roles: ['superadmin'] }
-	// { path: '/settings', label: 'Settings', icon: Cog, roles: ['superadmin', 'admin', 'designer'] },
+	{ path: '/organizations', label: 'Organizations', icon: Building, roles: ['superadmin'] },
+	{ path: '/inventory', label: 'Inventory', icon: Building, roles: ['superadmin'] }
 ];
 
 function AppSidebar() {

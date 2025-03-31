@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CREATE_ORDER, UPDATE_ORDER } from '@/graphql/mutations/order';
+import { GET_ME } from '@/graphql/queries/auth';
 import { GET_CATEGORIES } from '@/graphql/queries/type';
 import { GET_CLIENTS_BY_DESIGNER, GET_USERS } from '@/graphql/queries/user';
 import { useToast } from '@/hooks/use-toast';
@@ -21,7 +22,7 @@ const defaultFormData = {
 	itemNumber: '',
 	poNumber: '',
 	status: 'pending',
-	orderType: 'pickup',
+	orderType: 'pending',
 	deliveryAddress: '',
 	warehouseAddress: ''
 };
@@ -173,6 +174,8 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 
 	const clients = clientsData?.getClientsByDesigner || [];
 	const designers = userData?.getUsers?.filter((u) => u.role === 'designer' || u.role === 'client') || [];
+	const carriers = userData?.getUsers?.filter((u) => u.role === 'carrier') || [];
+	const shippers = userData?.getUsers?.filter((u) => u.role === 'shipper') || [];
 	const categories = categoriesData?.getTypes || [];
 
 	return (
@@ -202,6 +205,11 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 										{designers.map((designer) => (
 											<SelectItem key={designer.id} value={designer.id}>
 												{designer.name}
+												{designer.organizations?.length > 0 && (
+													<span className="ml-2 text-xs text-muted-foreground">
+														({designer.organizations[0]?.name})
+													</span>
+												)}
 											</SelectItem>
 										))}
 									</SelectContent>
@@ -262,11 +270,72 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 							</div>
 						</>
 					)}
+
+					{/* Carrier */}
+					<div className="flex flex-col gap-2">
+						<Label>Carrier</Label>
+						<Select
+							name="carrier"
+							value={formData.carrier}
+							onValueChange={(value) => setFormData((prev) => ({ ...prev, carrier: value }))}
+						>
+							<SelectTrigger className={errors.carrier ? 'border border-red-500' : ''}>
+								<SelectValue placeholder="Select carrier" />
+							</SelectTrigger>
+							<SelectContent>
+								{carriers.map((carrier) => (
+									<SelectItem key={carrier.id} value={carrier.id}>
+										{carrier.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
+					{/* Shipper */}
+					<div className="flex flex-col gap-2">
+						<Label>Shipper</Label>
+						<Select
+							name="shipper"
+							value={formData.shipper}
+							onValueChange={(value) => setFormData((prev) => ({ ...prev, shipper: value }))}
+						>
+							<SelectTrigger className={errors.shipper ? 'border border-red-500' : ''}>
+								<SelectValue placeholder="Select shipper" />
+							</SelectTrigger>
+							<SelectContent>
+								{shippers.map((shipper) => (
+									<SelectItem key={shipper.id} value={shipper.id}>
+										{shipper.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
+					<div className="flex flex-col gap-2">
+						<Label>Status</Label>
+						<Select
+							name="status"
+							value={formData.status}
+							onValueChange={(value) => setFormData((prev) => ({ ...prev, status: value }))}
+						>
+							<SelectTrigger>
+								<SelectValue placeholder="Select status" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="pending">Pending</SelectItem>
+								<SelectItem value="receiving">Receiving</SelectItem>
+								<SelectItem value="processing">Processing</SelectItem>
+								<SelectItem value="delivered">Delivered</SelectItem>
+								<SelectItem value="damaged">Damaged</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+
 					{[
 						{ label: 'Description', name: 'description' },
 						{ label: 'Quantity', name: 'quantity', type: 'number' },
-						{ label: 'Carrier', name: 'carrier' },
-						{ label: 'Shipper', name: 'shipper' },
 						{ label: 'Item Number', name: 'itemNumber' },
 						{ label: 'PO Number', name: 'poNumber' }
 					].map(({ label, name, type = 'text' }) => (
@@ -294,7 +363,7 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 								<SelectValue placeholder="Select type" />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="pickup">Pickup</SelectItem>
+								<SelectItem value="pending">Pending</SelectItem>
 								<SelectItem value="warehouse">Warehouse</SelectItem>
 								<SelectItem value="delivery">Delivery</SelectItem>
 							</SelectContent>
@@ -334,6 +403,23 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 							</div>
 						))}
 					</div>
+
+					{formData.status === 'damaged' && (
+						<div className="col-span-2 flex flex-col gap-2 mt-4">
+							<Label>Images - Damaged</Label>
+							<Input type="file" multiple onChange={(e) => handleImageUpload(e, 'damaged')} />
+							<div className="flex gap-2 mt-2 flex-wrap">
+								{formData.imagesByStatus?.damaged?.map((src, index) => (
+									<img
+										key={index}
+										src={src}
+										alt={`damaged-${index}`}
+										className="w-20 h-20 object-cover rounded border"
+									/>
+								))}
+							</div>
+						</div>
+					)}
 
 					<div className="col-span-2 flex flex-col gap-2">
 						<Label>Pieces</Label>

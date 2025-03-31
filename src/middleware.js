@@ -3,7 +3,7 @@ import { executeGraphQL } from '@/lib/apolloServer';
 import { NextResponse } from 'next/server';
 
 const roleProtectedRoutes = {
-	superadmin: ['/dashboard', '/users', '/organizations', '/orders'],
+	superadmin: ['/dashboard', '/users', '/organizations', '/orders', '/inventory'],
 	admin: ['/dashboard', '/users', '/orders'],
 	designer: ['/dashboard', '/clients'],
 	client: ['/dashboard', '/clients']

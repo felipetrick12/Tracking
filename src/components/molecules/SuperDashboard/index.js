@@ -1,5 +1,5 @@
-import { CardMetrics, OrdersTable } from '@/components/atoms';
-import { AddTypeModal } from '@/components/molecules';
+import { CardMetrics } from '@/components/atoms';
+import { AddTypeModal, OrdersTable } from '@/components/molecules';
 import { GET_SUPERADMIN_METRICS } from '@/graphql/queries/metrics';
 import { GET_ALL_ORDERS } from '@/graphql/queries/order';
 import { useQuery } from '@apollo/client';
@@ -45,13 +45,7 @@ const SuperDashboard = () => {
 					<AddTypeModal icon={() => <UserCog size={40} />} title="Create Role" typeLabel="roles" />
 				</div>
 
-				<OrdersTable
-					orders={orders?.getOrders}
-					user={{
-						role: 'admin'
-					}}
-					refetchMetrics={refetch}
-				/>
+				<OrdersTable orders={orders?.getOrders} refetchMetrics={refetch} />
 			</div>
 		</div>
 	);
