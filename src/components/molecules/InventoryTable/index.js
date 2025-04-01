@@ -13,6 +13,7 @@ const QRCodeScanner = ({ onScan }) => {
 	const [scanResult, setScanResult] = useState(null);
 
 	const handleScan = (data) => {
+		console.log('handleScan called with data:', data); // Agrega esta línea
 		if (data) {
 			setScanResult(data);
 			onScan(data);
