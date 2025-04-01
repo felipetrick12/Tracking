@@ -10,6 +10,7 @@ import { GET_CATEGORIES } from '@/graphql/queries/type';
 import { GET_CLIENTS_BY_DESIGNER, GET_USERS } from '@/graphql/queries/user';
 import { useToast } from '@/hooks/use-toast';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
+import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 
 const defaultFormData = {
@@ -26,7 +27,7 @@ const defaultFormData = {
 	warehouseAddress: ''
 };
 
-const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
+const AddAdminOrderModal = ({ open, setOpen, order = null, refetch }) => {
 	const isEditMode = !!order;
 	const { toast } = useToast();
 	const [createOrder, { loading: creating }] = useMutation(CREATE_ORDER);
@@ -112,6 +113,7 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 		if (!formData.client) newErrors.client = 'Client is required';
 		if (!formData.category) newErrors.category = 'Category is required';
 		if (!formData.quantity) newErrors.quantity = 'Quantity is required';
+		if (formData.quantity < 1) newErrors.quantity = 'Quantity must be at least 1';
 		if (!formData.orderType) newErrors.orderType = 'Order type is required';
 
 		if (formData.orderType === 'delivery' && !formData.deliveryAddress) {
@@ -134,6 +136,7 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 		clone.designer = data.designer?.id || data.designer;
 		clone.client = data.client?.id || data.client;
 		clone.category = data.category?.id || data.category;
+		clone.quantity = parseInt(data.quantity, 10);
 
 		// Sanitiza pieces
 		clone.pieces = (data.pieces || []).map((p) => ({
@@ -158,10 +161,12 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 			const cleanInput = sanitizeOrderInput(formData);
 
 			if (isEditMode) {
+				console.log('first', { orderId: order.id, input: cleanInput });
+
 				await updateOrder({ variables: { orderId: order.id, input: cleanInput } });
 				toast({ title: '✅ Order updated successfully!' });
 			} else {
-				await createOrder({ variables: { ...cleanInput } });
+				await createOrder({ variables: { input: cleanInput } });
 				toast({ title: '✅ Order created successfully!' });
 			}
 			handleCancel();
@@ -331,7 +336,7 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 							<SelectContent>
 								<SelectItem value="pending">Pending</SelectItem>
 								<SelectItem value="received">Received</SelectItem>
-								<SelectItem value="processing">Processing</SelectItem>
+								<SelectItem value="shipped">Shipped</SelectItem>
 								<SelectItem value="delivered">Delivered</SelectItem>
 								<SelectItem value="damaged">Damaged</SelectItem>
 							</SelectContent>
@@ -463,11 +468,11 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 						<div className="col-span-2 text-xs text-muted-foreground mt-4">
 							<p>
 								<strong>Received On:</strong>{' '}
-								{/* {formData.receivedOn ? format(new Date(formData.receivedOn), 'PPP') : 'N/A'} */}
+								{order.receivedOn ? format(new Date(Number(order.receivedOn)), 'P') : '—'}
 							</p>
 							<p>
 								<strong>Created At:</strong>{' '}
-								{/* {formData.createdAt ? format(new Date(formData.createdAt), 'PPP') : 'N/A'} */}
+								{order.createdAt ? format(new Date(Number(order.createdAt)), 'P') : '—'}
 							</p>
 						</div>
 					)}
@@ -497,4 +502,4 @@ const AddOrderModal = ({ open, setOpen, order = null, refetch }) => {
 	);
 };
 
-export default AddOrderModal;
+export default AddAdminOrderModal;

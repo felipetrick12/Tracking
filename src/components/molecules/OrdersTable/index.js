@@ -1,4 +1,4 @@
-import { AddOrderModal } from '@/components/molecules';
+import { AddAdminOrderModal } from '@/components/molecules';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -75,7 +75,9 @@ const OrdersTable = ({ refetchMetrics }) => {
 								<TableHead>Shipper</TableHead>
 								<TableHead>Address</TableHead>
 								<TableHead>Pieces</TableHead>
-								<TableHead>Received</TableHead>
+								<TableHead>Received On</TableHead>
+								<TableHead>Shipped On</TableHead>
+								<TableHead>Delivery On</TableHead>
 								<TableHead>Created</TableHead>
 								<TableHead>Actions</TableHead>
 							</TableRow>
@@ -115,6 +117,8 @@ const OrdersTable = ({ refetchMetrics }) => {
 												: '—'}
 										</TableCell>
 										<TableCell>{order.receivedOn ? format(new Date(), 'P') : '—'}</TableCell>
+										<TableCell>{order.shippedOn ? format(new Date(), 'P') : '—'}</TableCell>
+										<TableCell>{order.deliveryOn ? format(new Date(), 'P') : '—'}</TableCell>
 										<TableCell>{format(new Date(), 'P')}</TableCell>
 										<TableCell>
 											<Button
@@ -135,7 +139,12 @@ const OrdersTable = ({ refetchMetrics }) => {
 				</Card>
 			)}
 			{modalOpen && (
-				<AddOrderModal open={modalOpen} setOpen={setModalOpen} order={selectedOrder} refetch={refetchData} />
+				<AddAdminOrderModal
+					open={modalOpen}
+					setOpen={setModalOpen}
+					order={selectedOrder}
+					refetch={refetchData}
+				/>
 			)}
 		</>
 	);

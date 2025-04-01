@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useMutation, useQuery } from '@apollo/client';
 import { useEffect, useState } from 'react';
 
-import { CREATE_ORDER, CREATE_ORDER_CLIENT, UPDATE_ORDER } from '@/graphql/mutations/order';
+import { CREATE_ORDER_CLIENT, UPDATE_ORDER } from '@/graphql/mutations/order';
 import { GET_ME } from '@/graphql/queries/auth';
 import { GET_CATEGORIES } from '@/graphql/queries/type';
 import { useToast } from '@/hooks/use-toast';
@@ -63,6 +63,8 @@ const AddClientOrderModal = ({ open, setOpen, order = null, refetch, selectedCli
 		const newErrors = {};
 		if (!formData.description) newErrors.description = 'Description is required';
 		if (!formData.category) newErrors.category = 'Category is required';
+		if (formData.quantity < 1) newErrors.quantity = 'Quantity must be at least 1';
+
 		return newErrors;
 	};
 

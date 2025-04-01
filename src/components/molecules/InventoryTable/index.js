@@ -13,7 +13,6 @@ const QRCodeScanner = ({ onScan }) => {
 	const [scanResult, setScanResult] = useState(null);
 
 	const handleScan = (data) => {
-		console.log('handleScan called with data:', data); // Agrega esta línea
 		if (data) {
 			setScanResult(data);
 			onScan(data);
@@ -51,14 +50,19 @@ const InventoryTable = () => {
 
 	const getStatusRowClass = (status) => {
 		switch (status) {
-			case 'assigned':
+			case 'pending':
+				return 'bg-yellow-50'; // pastel amarillo
+			case 'processing':
 				return 'bg-green-50'; // pastel verde
 			case 'damaged':
 				return 'bg-red-50'; // pastel rojo
-			case 'stored':
+			case 'received':
 				return 'bg-blue-50'; // pastel azul
-			default:
+			case 'complete':
+			case 'delivered':
 				return 'bg-purple-50'; // pastel morado
+			default:
+				return '';
 		}
 	};
 
