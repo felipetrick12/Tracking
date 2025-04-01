@@ -4,7 +4,6 @@ import { useQuery } from '@apollo/client';
 import { useState } from 'react';
 
 import { GET_ME } from '@/graphql/queries/auth';
-import { GET_ALL_ORDERS } from '@/graphql/queries/order';
 import { GET_MY_CLIENTS } from '@/graphql/queries/user';
 
 import { OrdersClientTable } from '@/components/molecules';
@@ -22,17 +21,7 @@ const ClientOrdersDashboard = () => {
 		skip: !userId
 	});
 
-	const {
-		data: ordersData,
-		loading: loadingOrders,
-		refetch
-	} = useQuery(GET_ALL_ORDERS, {
-		variables: { clientId: selectedClient?.id },
-		skip: !selectedClient
-	});
-
 	const clients = clientsData?.getMyClients ?? [];
-	const orders = ordersData?.getOrders ?? [];
 
 	return (
 		<div className="flex h-[calc(100vh-80px)]">
@@ -68,7 +57,7 @@ const ClientOrdersDashboard = () => {
 
 			{/* Orders content */}
 			<div className="flex-1 p-6 overflow-auto">
-				<OrdersClientTable orders={orders} selectedClient={selectedClient} refetch={refetch} />
+				<OrdersClientTable selectedClient={selectedClient} />
 			</div>
 		</div>
 	);

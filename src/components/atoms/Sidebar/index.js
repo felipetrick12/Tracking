@@ -1,6 +1,6 @@
 'use client';
 
-import { Building, ClipboardList, Cog, Home, ShieldCheck, UserRound, Users } from 'lucide-react';
+import { Building, Home, UserRound, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';

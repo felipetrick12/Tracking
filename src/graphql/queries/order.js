@@ -1,5 +1,63 @@
 import { gql } from '@apollo/client';
 
+// Create order for a designer
+export const CREATE_ORDER = gql`
+	mutation CreateOrderDesigner(
+		$designer: ID!
+		$client: ID!
+		$description: String
+		$category: ID!
+		$quantity: Int!
+		$pieces: [PieceInput!]
+		$carrier: ID
+		$shipper: ID
+		$itemNumber: String
+		$poNumber: String
+		$orderType: String
+		$deliveryAddress: String
+		$warehouseAddress: String
+		$status: String
+		$imagesByStatus: ImagesByStatusInput
+	) {
+		createOrderDesigner(
+			designer: $designer
+			client: $client
+			description: $description
+			category: $category
+			quantity: $quantity
+			pieces: $pieces
+			carrier: $carrier
+			shipper: $shipper
+			itemNumber: $itemNumber
+			poNumber: $poNumber
+			orderType: $orderType
+			deliveryAddress: $deliveryAddress
+			warehouseAddress: $warehouseAddress
+			status: $status
+			imagesByStatus: $imagesByStatus
+		) {
+			_id
+			description
+			quantity
+			orderType
+			status
+			designer {
+				_id
+				name
+			}
+			client {
+				_id
+				name
+			}
+			category {
+				_id
+				name
+			}
+			createdAt
+		}
+	}
+`;
+
 // ✅ Obtener TODAS las órdenes
 export const GET_ALL_ORDERS = gql`
 	query GetOrders($clientId: ID, $designerId: ID, $status: String) {
@@ -46,30 +104,6 @@ export const GET_CLIENTS_BY_DESIGNER = gql`
 			name
 			email
 			photoUrl
-		}
-	}
-`;
-
-// ✅ Obtener órdenes asignadas a un Diseñador específico
-export const GET_ORDERS_BY_DESIGNER = gql`
-	query GetOrdersByDesigner($designerId: ID!) {
-		getOrdersByDesigner(designerId: $designerId) {
-			id
-			receivedOn
-			client {
-				id
-				name
-			}
-			description
-			category {
-				id
-				name
-			}
-			quantity
-			status
-			orderType
-			createdAt
-			updatedAt
 		}
 	}
 `;

@@ -52,6 +52,25 @@ export const CREATE_ORDER = gql`
 	}
 `;
 
+export const CREATE_ORDER_CLIENT = gql`
+	mutation CreateOrder($input: OrderInput!) {
+		createOrder(input: $input) {
+			id
+			receivedOn
+			status
+			description
+			designer {
+				id
+				name
+			}
+			client {
+				id
+				name
+			}
+		}
+	}
+`;
+
 // ✅ Actualizar una orden existente
 export const UPDATE_ORDER = gql`
 	mutation UpdateOrder($orderId: ID!, $input: OrderInput) {

@@ -2,10 +2,23 @@ import { AddClientOrderModal } from '@/components/molecules';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { GET_ALL_ORDERS } from '@/graphql/queries/order';
+import { useQuery } from '@apollo/client';
 import { format } from 'date-fns';
 import { useState } from 'react';
 
-const OrdersClientTable = ({ orders, selectedClient, refetch }) => {
+const OrdersClientTable = ({ selectedClient }) => {
+	const {
+		data,
+		loading: loadingOrders,
+		refetch
+	} = useQuery(GET_ALL_ORDERS, {
+		variables: { clientId: selectedClient?.id },
+		skip: !selectedClient
+	});
+
+	const orders = data?.getOrders || [];
+
 	const [selectedOrder, setSelectedOrder] = useState(null);
 	const [modalOpen, setModalOpen] = useState(false);
 
