@@ -5,16 +5,29 @@ export const CREATE_ORDER = gql`
 	mutation CreateOrder($input: OrderInput!) {
 		createOrder(input: $input) {
 			id
-			receivedOn
 			status
 			description
+			quantity
+			poNumber
+			itemNumber
+			createdAt
+			client {
+				id
+				name
+			}
 			designer {
 				id
 				name
 			}
-			client {
+			items {
 				id
 				name
+				qrCode
+				location
+				category {
+					id
+					name
+				}
 			}
 		}
 	}

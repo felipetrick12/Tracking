@@ -19,10 +19,8 @@ const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, set
 	const [formData, setFormData] = useState({
 		poNumber: '',
 		itemNumber: '',
-		status: 'pending',
-		orderType: 'pending',
-		deliveryAddress: '',
-		warehouseAddress: ''
+		description: '',
+		status: 'pending'
 	});
 
 	const handleChange = (e) => {
@@ -34,15 +32,23 @@ const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, set
 		e.preventDefault();
 
 		const items = selectedItems.map((item) => ({
-			...item,
-			images: []
+			id: item.id,
+			name: item.name,
+			qrCode: item.qrCode,
+			location: item.location,
+			category: {
+				id: item.category?.id,
+				name: item.category?.name
+			},
+			image: item.image ? [item.image] : [],
+			pieces: [] // Optional, add if necessary
 		}));
 
 		const input = {
 			...formData,
 			client: selectedClient.id,
 			quantity: items.length,
-			pieces: items
+			items
 		};
 
 		try {
@@ -53,8 +59,8 @@ const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, set
 			setFormData({
 				poNumber: '',
 				itemNumber: '',
+				description: '',
 				status: 'pending',
-				orderType: 'pending',
 				deliveryAddress: '',
 				warehouseAddress: ''
 			});
@@ -76,24 +82,14 @@ const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, set
 						<Label>PO Number</Label>
 						<Input name="poNumber" value={formData.poNumber} onChange={handleChange} />
 					</div>
-
 					<div className="flex flex-col gap-2">
 						<Label>Item Number</Label>
 						<Input name="itemNumber" value={formData.itemNumber} onChange={handleChange} />
 					</div>
-
-					{formData.orderType === 'delivery' && (
-						<div className="col-span-2 flex flex-col gap-2">
-							<Label>Delivery Address</Label>
-							<Input name="deliveryAddress" value={formData.deliveryAddress} onChange={handleChange} />
-						</div>
-					)}
-					{formData.orderType === 'warehouse' && (
-						<div className="col-span-2 flex flex-col gap-2">
-							<Label>Warehouse Address</Label>
-							<Input name="warehouseAddress" value={formData.warehouseAddress} onChange={handleChange} />
-						</div>
-					)}
+					<div className="col-span-2 flex flex-col gap-2">
+						<Label>Description</Label>
+						<Input name="description" value={formData.description} onChange={handleChange} />
+					</div>
 
 					<div className="col-span-2">
 						<Label>Items Selected ({selectedItems.length})</Label>
