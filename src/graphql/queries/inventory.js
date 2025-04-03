@@ -1,35 +1,33 @@
 import { gql } from '@apollo/client';
 
-export const GET_INVENTORY_ITEMS = gql`
-	query GetInventoryItems($orderId: ID) {
-		getInventoryItems(orderId: $orderId) {
-			_id
+export const GET_INVENTORY_BY_CLIENT = gql`
+	query GetInventoryByClient($clientId: ID!) {
+		getInventoryByClient(clientId: $clientId) {
+			id
 			name
-			status
-			order {
-				id
-			}
-			location
 			qrCode
 			qrCodeImage
-			image
-			categoryName
-			orderType
-			clientName
-			designerName
-			createdAt
-		}
-	}
-`;
-
-export const UPDATE_INVENTORY_ITEM = gql`
-	mutation UpdateInventoryItem($id: ID!, $input: InventoryUpdateInput!) {
-		updateInventoryItem(id: $id, input: $input) {
-			_id
-			name
+			currentStatus
 			location
-			status
-			image
+			createdAt
+			category {
+				id
+				name
+			}
+			client {
+				id
+				name
+			}
+			statusHistory {
+				status
+				changedAt
+				note
+				images
+				changedBy {
+					id
+					name
+				}
+			}
 		}
 	}
 `;

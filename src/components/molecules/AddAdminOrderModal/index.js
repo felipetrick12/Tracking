@@ -362,25 +362,6 @@ const AddAdminOrderModal = ({ open, setOpen, order = null, refetch }) => {
 						</div>
 					))}
 
-					<div className="flex flex-col gap-2">
-						<Label>Order Type</Label>
-						<Select
-							name="orderType"
-							value={formData.orderType}
-							onValueChange={(value) => setFormData((prev) => ({ ...prev, orderType: value }))}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder="Select type" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="pending">Pending</SelectItem>
-								<SelectItem value="warehouse">Warehouse</SelectItem>
-								<SelectItem value="delivery">Delivery</SelectItem>
-							</SelectContent>
-							{errors.orderType && <p className="text-red-500 text-xs">{errors.orderType}</p>}
-						</Select>
-					</div>
-
 					{formData?.orderType === 'delivery' && (
 						<div className="col-span-2 flex flex-col gap-2">
 							<Label>Delivery Address</Label>
@@ -395,10 +376,10 @@ const AddAdminOrderModal = ({ open, setOpen, order = null, refetch }) => {
 					)}
 
 					{/* Image uploads by status */}
-					<div className="col-span-2 mt-10">
+					<div className="col-span-2 mt-4">
 						{['received'].map((status) => (
 							<div key={status} className="col-span-2 flex flex-col gap-2">
-								<Label>{`Images - Order`}</Label>
+								<Label>{`Images`}</Label>
 								<Input type="file" multiple onChange={(e) => handleImageUpload(e, status)} />
 								<div className="flex gap-2 mt-2 flex-wrap">
 									{formData.imagesByStatus?.[status]?.map((src, index) => (
@@ -415,7 +396,7 @@ const AddAdminOrderModal = ({ open, setOpen, order = null, refetch }) => {
 					</div>
 
 					{formData.status === 'damaged' && (
-						<div className="col-span-2 flex flex-col gap-2 mt-4">
+						<div className="col-span-2 flex flex-col gap-2">
 							<Label>Images - Damaged</Label>
 							<Input type="file" multiple onChange={(e) => handleImageUpload(e, 'damaged')} />
 							<div className="flex gap-2 mt-2 flex-wrap">
@@ -483,6 +464,7 @@ const AddAdminOrderModal = ({ open, setOpen, order = null, refetch }) => {
 							variant="secondary"
 							onClick={() => handleCancel()}
 							disabled={creating || updating}
+							className="text-white"
 						>
 							Cancel
 						</Button>

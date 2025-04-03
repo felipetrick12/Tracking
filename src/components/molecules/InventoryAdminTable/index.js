@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { GET_INVENTORY_ITEMS } from '@/graphql/queries/inventory';
+import { GET_INVENTORY_BY_CLIENT } from '@/graphql/queries/inventory';
 import { useQuery } from '@apollo/client';
 import { format } from 'date-fns';
 import Image from 'next/image';
@@ -32,8 +32,8 @@ const QRCodeScanner = ({ onScan }) => {
 	);
 };
 
-const InventoryTable = () => {
-	const { data, loading, error, refetch } = useQuery(GET_INVENTORY_ITEMS);
+const InventoryAdminTable = () => {
+	const { data, loading, error, refetch } = useQuery(GET_INVENTORY_BY_CLIENT);
 
 	const inventory = data?.getInventoryItems || [];
 	const [scannedItem, setScannedItem] = useState(null);
@@ -164,4 +164,4 @@ const InventoryTable = () => {
 	);
 };
 
-export default InventoryTable;
+export default InventoryAdminTable;

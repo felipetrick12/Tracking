@@ -4,190 +4,145 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useMutation, useQuery } from '@apollo/client';
-import { useEffect, useState } from 'react';
-
-import { CREATE_ORDER_CLIENT, UPDATE_ORDER } from '@/graphql/mutations/order';
-import { GET_ME } from '@/graphql/queries/auth';
-import { GET_CATEGORIES } from '@/graphql/queries/type';
+import { CREATE_ORDER } from '@/graphql/mutations/order';
 import { useToast } from '@/hooks/use-toast';
+import { useMutation } from '@apollo/client';
+import { useState } from 'react';
 
-const defaultFormDataDesigner = {
-	description: '',
-	quantity: 1,
-	status: 'pending',
-	designer: '',
-	client: '',
-	category: ''
-};
-
-const AddClientOrderModal = ({ open, setOpen, order = null, refetch, selectedClient }) => {
-	const isEditMode = !!order;
+const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, setSelectedItems, refetch }) => {
 	const { toast } = useToast();
+	const [createOrder, { loading: creating }] = useMutation(CREATE_ORDER);
+	const [imagesByItem, setImagesByItem] = useState({});
 
-	const [createOrderClient, { loading: creating }] = useMutation(CREATE_ORDER_CLIENT);
-	const [updateOrder, { loading: updating }] = useMutation(UPDATE_ORDER);
+	const [formData, setFormData] = useState({
+		poNumber: '',
+		itemNumber: '',
+		status: 'pending',
+		orderType: 'pending',
+		deliveryAddress: '',
+		warehouseAddress: ''
+	});
 
-	const { data: meData } = useQuery(GET_ME);
-	const { data: categoriesData } = useQuery(GET_CATEGORIES);
-	const userId = meData?.me?.id;
-	const categories = categoriesData?.getTypes || [];
+	const handleImageUpload = async (e, itemId) => {
+		const files = Array.from(e.target.files);
 
-	const [formData, setFormData] = useState({ ...defaultFormDataDesigner });
-	const [errors, setErrors] = useState({});
+		const readFilesAsBase64 = await Promise.all(
+			files.map((file) => {
+				return new Promise((resolve, reject) => {
+					const reader = new FileReader();
+					reader.onloadend = () => resolve(reader.result);
+					reader.onerror = reject;
+					reader.readAsDataURL(file);
+				});
+			})
+		);
 
-	useEffect(() => {
-		if (order) {
-			setFormData({
-				...defaultFormDataDesigner,
-				...order,
-				designer: userId,
-				client: selectedClient.id
-			});
-		} else if (userId && selectedClient?.id) {
-			setFormData((prev) => ({
-				...prev,
-				designer: userId,
-				client: selectedClient.id
-			}));
-		}
-	}, [order, userId, selectedClient]);
+		setImagesByItem((prev) => ({
+			...prev,
+			[itemId]: [...(prev[itemId] || []), ...readFilesAsBase64]
+		}));
+	};
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const validateForm = () => {
-		const newErrors = {};
-		if (!formData.description) newErrors.description = 'Description is required';
-		if (!formData.category) newErrors.category = 'Category is required';
-		if (formData.quantity < 1) newErrors.quantity = 'Quantity must be at least 1';
-
-		return newErrors;
-	};
-
-	const sanitizeOrderInput = (data) => {
-		const clone = { ...data };
-		const fieldsToRemove = ['__typename', 'id', 'createdAt', 'updatedAt', 'receivedOn'];
-		fieldsToRemove.forEach((field) => delete clone[field]);
-
-		clone.quantity = parseInt(data.quantity, 10);
-		clone.orderType = 'pending';
-
-		return clone;
-	};
-
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		const validationErrors = validateForm();
-		if (Object.keys(validationErrors).length > 0) {
-			setErrors(validationErrors);
-			return;
-		}
-		setErrors({});
 
-		const cleanInput = sanitizeOrderInput(formData);
+		const items = selectedItems.map((item) => ({
+			...item,
+			images: imagesByItem[item.id] || []
+		}));
+
+		const input = {
+			...formData,
+			client: selectedClient.id,
+			quantity: items.length,
+			pieces: items // reutilizamos "pieces" para almacenar los items con imagenes
+		};
 
 		try {
-			if (isEditMode) {
-				await updateOrder({ variables: { orderId: order.id, input: cleanInput } });
-				toast({ title: '✅ Order updated successfully!' });
-			} else {
-				await createOrderClient({ variables: { input: cleanInput } });
-				toast({ title: '✅ Order created successfully!' });
-			}
-			handleCancel();
-			refetch();
+			await createOrder({ variables: { input } });
+			toast({ title: '✅ Order created successfully!' });
+			setOpen(false);
+			setFormData({
+				poNumber: '',
+				itemNumber: '',
+				status: 'pending',
+				orderType: 'pending',
+				deliveryAddress: '',
+				warehouseAddress: ''
+			});
+			setImagesByItem({});
+			refetch && refetch();
 		} catch (error) {
 			toast({ title: `❌ Error: ${error.message}` });
 		}
 	};
 
-	const handleCancel = () => {
-		setOpen(false);
-		setFormData({ ...defaultFormDataDesigner });
-		setErrors({});
-	};
-
 	return (
-		<Dialog open={open} onOpenChange={handleCancel}>
-			<DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
-				<DialogHeader className={'mb-4'}>
-					<DialogTitle className="text-2xl font-semibold">
-						{isEditMode ? 'Edit Order' : 'Create Order'}
-					</DialogTitle>
+		<Dialog open={open} onOpenChange={setOpen}>
+			<DialogContent className="max-w-4xl max-h-[90vh] overflow-auto p-10">
+				<DialogHeader className={'my-3'}>
+					<DialogTitle className="text-2xl font-semibold">Create Order</DialogTitle>
 				</DialogHeader>
-
 				<form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 text-sm">
-					{!isEditMode && (
-						<>
-							<div className="flex flex-col gap-2">
-								<Label>Client</Label>
-								<Input
-									value={selectedClient?.name || ''}
-									disabled
-									className="bg-muted cursor-not-allowed"
-								/>
-							</div>
+					<div className="flex flex-col gap-2">
+						<Label>PO Number</Label>
+						<Input name="poNumber" value={formData.poNumber} onChange={handleChange} />
+					</div>
 
-							<div className="flex flex-col gap-2">
-								<Label>Category</Label>
-								<Select
-									value={formData.category}
-									onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
-								>
-									<SelectTrigger className={errors.category ? 'border border-red-500' : ''}>
-										<SelectValue placeholder="Select category" />
-									</SelectTrigger>
-									<SelectContent>
-										{categories.map((type) => (
-											<SelectItem key={type.id} value={type.id}>
-												{type.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-								{errors.category && <p className="text-red-500 text-xs">{errors.category}</p>}
-							</div>
-						</>
+					<div className="flex flex-col gap-2">
+						<Label>Item Number</Label>
+						<Input name="itemNumber" value={formData.itemNumber} onChange={handleChange} />
+					</div>
+
+					{formData.orderType === 'delivery' && (
+						<div className="col-span-2 flex flex-col gap-2">
+							<Label>Delivery Address</Label>
+							<Input name="deliveryAddress" value={formData.deliveryAddress} onChange={handleChange} />
+						</div>
+					)}
+					{formData.orderType === 'warehouse' && (
+						<div className="col-span-2 flex flex-col gap-2">
+							<Label>Warehouse Address</Label>
+							<Input name="warehouseAddress" value={formData.warehouseAddress} onChange={handleChange} />
+						</div>
 					)}
 
-					{[
-						{ label: 'Description', name: 'description' },
-						{ label: 'Quantity', name: 'quantity', type: 'number' }
-					].map(({ label, name, type = 'text' }) => (
-						<div key={name} className="flex flex-col gap-2">
-							<Label>{label}</Label>
-							<Input
-								type={type}
-								name={name}
-								value={formData[name]}
-								onChange={handleChange}
-								className={errors[name] ? 'border border-red-500' : ''}
-							/>
-							{errors[name] && <p className="text-red-500 text-xs">{errors[name]}</p>}
+					<div className="col-span-2">
+						<Label>Items</Label>
+						<div className="grid grid-cols-2 gap-4 mt-2">
+							{selectedItems.map((item) => (
+								<div key={item.id} className="border p-3 rounded shadow-sm">
+									<p className="font-medium mb-1">{item.name}</p>
+									<p className="text-xs text-muted-foreground mb-2">
+										Category: {item.category?.name}
+									</p>
+									<Input type="file" multiple onChange={(e) => handleImageUpload(e, item.id)} />
+									<div className="flex gap-2 mt-2 flex-wrap">
+										{(imagesByItem[item.id] || []).map((src, index) => (
+											<img
+												key={index}
+												src={src}
+												alt={`item-${index}`}
+												className="w-16 h-16 object-cover rounded border"
+											/>
+										))}
+									</div>
+								</div>
+							))}
 						</div>
-					))}
+					</div>
 
 					<div className="col-span-2 flex justify-end gap-4 mt-6">
-						<Button
-							type="button"
-							variant="secondary"
-							onClick={handleCancel}
-							disabled={creating || updating}
-						>
+						<Button type="button" variant="secondary" onClick={() => setOpen(false)} disabled={creating}>
 							Cancel
 						</Button>
-						<Button type="submit" disabled={creating || updating}>
-							{creating || updating
-								? isEditMode
-									? 'Updating...'
-									: 'Creating...'
-								: isEditMode
-								? 'Update'
-								: 'Create'}
+						<Button type="submit" variant="default" disabled={creating}>
+							{creating ? 'Creating...' : 'Create'}
 						</Button>
 					</div>
 				</form>

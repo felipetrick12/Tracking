@@ -1,24 +1,26 @@
-import OrdersClientTable from '../molecules/OrdersClientTable';
+import OrdersClientTable from './InventoryClientTable';
 import OrdersTable from '../molecules/OrdersTable';
-import AddClientOrderModal from './AddClientOrderModal';
 import AddAdminOrderModal from './AddAdminOrderModal';
+import AddClientOrderModal from './AddClientOrderModal';
 import AddOrganizationForm from './AddOrganizationForm';
 import AddTypeModal from './AddTypeModal';
 import AddUserForm from './AddUserForm';
 import AdminDashboard from './AdminDashboard';
 import ClientDashboard from './ClientDashboard';
-import InventoryTable from './InventoryTable';
+import InventoryAdminTable from './InventoryAdminTable';
+import InventoryClientTable from './InventoryClientTable';
 import SuperDashboard from './SuperDashboard';
 
 export {
-	AddClientOrderModal,
 	AddAdminOrderModal,
+	AddClientOrderModal,
 	AddOrganizationForm,
 	AddTypeModal,
 	AddUserForm,
 	AdminDashboard,
 	ClientDashboard,
-	InventoryTable,
+	InventoryAdminTable,
+	InventoryClientTable,
 	OrdersClientTable,
 	OrdersTable,
 	SuperDashboard
