@@ -97,17 +97,6 @@ export const GET_ALL_ORDERS = gql`
 	}
 `;
 
-export const GET_CLIENTS_BY_DESIGNER = gql`
-	query GetClientsByDesigner($designerId: ID!) {
-		getClientsByDesigner(designerId: $designerId) {
-			id
-			name
-			email
-			photoUrl
-		}
-	}
-`;
-
 export const GET_ORDERS_BY_CLIENT = gql`
 	query GetOrdersByClient($clientId: ID!) {
 		getOrdersByClient(clientId: $clientId) {

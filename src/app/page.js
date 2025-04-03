@@ -1,6 +1,5 @@
 'use client';
 
-import { LOGIN_MUTATION } from '@/graphql/mutations';
 import { useToast } from '@/hooks/use-toast';
 import { useApolloClient, useMutation } from '@apollo/client';
 import Image from 'next/image';
@@ -15,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import { Eye, EyeOff } from 'lucide-react';
+import { LOGIN_MUTATION } from '@/graphql/mutations/auth';
 
 const LoginPage = () => {
 	const router = useRouter();

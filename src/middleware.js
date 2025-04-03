@@ -5,8 +5,8 @@ import { NextResponse } from 'next/server';
 const roleProtectedRoutes = {
 	superadmin: ['/dashboard', '/users', '/organizations', '/orders', '/inventory'],
 	admin: ['/dashboard', '/users', '/orders'],
-	designer: ['/dashboard', '/clients', '/inventory'],
-	client: ['/dashboard', '/clients', '/inventory']
+	designer: ['/dashboard', '/clients'],
+	client: ['/dashboard', '/clients']
 };
 
 const publicRoutes = ['/', '/register'];

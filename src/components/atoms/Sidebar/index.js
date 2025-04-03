@@ -1,6 +1,6 @@
 'use client';
 
-import { Building, Home, UserRound, Users } from 'lucide-react';
+import { Boxes, Building, FileText, Home, UserRound, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -22,7 +22,8 @@ const ROUTES = [
 	{ path: '/dashboard', label: 'Home', icon: Home, roles: ['superadmin', 'admin', 'designer'] },
 	{ path: '/clients', label: 'Clients', icon: Users, roles: ['designer', 'client'] },
 	{ path: '/users', label: 'Users', icon: UserRound, roles: ['superadmin', 'admin'] },
-	{ path: '/inventory', label: 'Inventory', icon: Building, roles: ['superadmin'] },
+	{ path: '/orders', label: 'Orders', icon: FileText, roles: ['superadmin', 'admin'] },
+	{ path: '/inventory', label: 'Inventory', icon: Boxes, roles: ['superadmin'] },
 	{ path: '/organizations', label: 'Organizations', icon: Building, roles: ['superadmin'] }
 ];
 

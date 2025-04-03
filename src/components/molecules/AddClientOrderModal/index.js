@@ -1,18 +1,20 @@
 'use client';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CREATE_ORDER } from '@/graphql/mutations/order';
 import { useToast } from '@/hooks/use-toast';
+import { getCategoryIcon } from '@/utils/getCategoryIcon';
 import { useMutation } from '@apollo/client';
+import { X } from 'lucide-react';
 import { useState } from 'react';
 
 const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, setSelectedItems, refetch }) => {
 	const { toast } = useToast();
 	const [createOrder, { loading: creating }] = useMutation(CREATE_ORDER);
-	const [imagesByItem, setImagesByItem] = useState({});
 
 	const [formData, setFormData] = useState({
 		poNumber: '',
@@ -22,26 +24,6 @@ const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, set
 		deliveryAddress: '',
 		warehouseAddress: ''
 	});
-
-	const handleImageUpload = async (e, itemId) => {
-		const files = Array.from(e.target.files);
-
-		const readFilesAsBase64 = await Promise.all(
-			files.map((file) => {
-				return new Promise((resolve, reject) => {
-					const reader = new FileReader();
-					reader.onloadend = () => resolve(reader.result);
-					reader.onerror = reject;
-					reader.readAsDataURL(file);
-				});
-			})
-		);
-
-		setImagesByItem((prev) => ({
-			...prev,
-			[itemId]: [...(prev[itemId] || []), ...readFilesAsBase64]
-		}));
-	};
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -53,18 +35,19 @@ const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, set
 
 		const items = selectedItems.map((item) => ({
 			...item,
-			images: imagesByItem[item.id] || []
+			images: []
 		}));
 
 		const input = {
 			...formData,
 			client: selectedClient.id,
 			quantity: items.length,
-			pieces: items // reutilizamos "pieces" para almacenar los items con imagenes
+			pieces: items
 		};
 
 		try {
 			await createOrder({ variables: { input } });
+
 			toast({ title: '✅ Order created successfully!' });
 			setOpen(false);
 			setFormData({
@@ -75,7 +58,7 @@ const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, set
 				deliveryAddress: '',
 				warehouseAddress: ''
 			});
-			setImagesByItem({});
+			setSelectedItems([]);
 			refetch && refetch();
 		} catch (error) {
 			toast({ title: `❌ Error: ${error.message}` });
@@ -113,35 +96,60 @@ const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, set
 					)}
 
 					<div className="col-span-2">
-						<Label>Items</Label>
-						<div className="grid grid-cols-2 gap-4 mt-2">
-							{selectedItems.map((item) => (
-								<div key={item.id} className="border p-3 rounded shadow-sm">
-									<p className="font-medium mb-1">{item.name}</p>
-									<p className="text-xs text-muted-foreground mb-2">
-										Category: {item.category?.name}
-									</p>
-									<Input type="file" multiple onChange={(e) => handleImageUpload(e, item.id)} />
-									<div className="flex gap-2 mt-2 flex-wrap">
-										{(imagesByItem[item.id] || []).map((src, index) => (
-											<img
-												key={index}
-												src={src}
-												alt={`item-${index}`}
-												className="w-16 h-16 object-cover rounded border"
-											/>
-										))}
+						<Label>Items Selected ({selectedItems.length})</Label>
+						{selectedItems.length === 0 ? (
+							<p className="text-muted-foreground text-sm mt-2">No items selected.</p>
+						) : (
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+								{selectedItems.map((item, index) => (
+									<div
+										key={item.id}
+										className="relative flex items-start justify-between gap-4 border rounded-lg p-4 bg-muted/50 shadow-sm"
+									>
+										<div className="flex items-start gap-3">
+											<div className="pt-1 text-muted-foreground">
+												{getCategoryIcon(item.category)}
+											</div>
+											<div>
+												<p className="font-semibold">{item.name}</p>
+												<p className="text-xs text-muted-foreground">
+													Category: {item.category?.name}
+												</p>
+												<Badge variant="outline" className="mt-1 text-[10px]">
+													ID: {item.id.slice(-6)}
+												</Badge>
+											</div>
+										</div>
+										<Button
+											type="button"
+											size="icon"
+											variant="ghost"
+											className="text-muted-foreground hover:text-destructive"
+											onClick={() => {
+												const updated = [...selectedItems];
+												updated.splice(index, 1);
+												setSelectedItems(updated);
+											}}
+										>
+											<X size={16} />
+										</Button>
 									</div>
-								</div>
-							))}
-						</div>
+								))}
+							</div>
+						)}
 					</div>
 
 					<div className="col-span-2 flex justify-end gap-4 mt-6">
-						<Button type="button" variant="secondary" onClick={() => setOpen(false)} disabled={creating}>
+						<Button
+							type="button"
+							className="text-white"
+							variant="secondary"
+							onClick={() => setOpen(false)}
+							disabled={creating}
+						>
 							Cancel
 						</Button>
-						<Button type="submit" variant="default" disabled={creating}>
+						<Button type="submit" variant="default" disabled={creating || selectedItems.length === 0}>
 							{creating ? 'Creating...' : 'Create'}
 						</Button>
 					</div>

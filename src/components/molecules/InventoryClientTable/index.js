@@ -57,9 +57,7 @@ const InventoryClientTable = ({ selectedClient, selectedItems, setSelectedItems 
 								<TableHead>ID</TableHead>
 								<TableHead>Name</TableHead>
 								<TableHead>Category</TableHead>
-								<TableHead>QR Code</TableHead>
 								<TableHead>Status</TableHead>
-								<TableHead>Location</TableHead>
 								<TableHead>Created At</TableHead>
 							</TableRow>
 						</TableHeader>
@@ -75,9 +73,7 @@ const InventoryClientTable = ({ selectedClient, selectedItems, setSelectedItems 
 									<TableCell>{item.id}</TableCell>
 									<TableCell>{item.name}</TableCell>
 									<TableCell>{item.category?.name || '—'}</TableCell>
-									<TableCell>{item.qrCode}</TableCell>
 									<TableCell className="capitalize">{item.currentStatus}</TableCell>
-									<TableCell>{item.location}</TableCell>
 									<TableCell>{format(new Date(item.createdAt), 'P')}</TableCell>
 								</TableRow>
 							))}

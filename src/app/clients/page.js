@@ -41,12 +41,13 @@ const ClientOrdersDashboard = () => {
 								<Button
 									variant={selectedClient?.id === client.id ? 'default' : 'ghost'}
 									className="w-full justify-start mb-1"
-									onClick={() =>
+									onClick={() => {
 										setSelectedClient({
 											id: client.id,
 											name: client.name
-										})
-									}
+										});
+										setSelectedItems([]);
+									}}
 								>
 									{client.name}
 								</Button>
