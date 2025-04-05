@@ -8,6 +8,21 @@ export const CREATE_MULTIPLE_INVENTORY_ITEMS = gql`
 			location
 			currentStatus
 			qrCode
+			qrCodeImage
+			imagesByStatus
+			statusHistory {
+				status
+				changedAt
+				note
+				images
+			}
+			pieces {
+				name
+				status
+				note
+				imagesByStatus
+				location
+			}
 			client {
 				id
 				name
