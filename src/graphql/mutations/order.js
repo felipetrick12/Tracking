@@ -123,3 +123,35 @@ export const UPDATE_ORDER = gql`
 		}
 	}
 `;
+
+export const UPDATE_ORDER_STATUS = gql`
+	mutation UpdateOrderStatus($orderId: ID!, $status: String!) {
+		updateOrderStatus(orderId: $orderId, status: $status) {
+			id
+			status
+			updatedAt
+		}
+	}
+`;
+
+export const UPDATE_ORDER_AND_INVENTORY = gql`
+	mutation UpdateOrderAndInventory($orderId: ID!, $input: UpdateOrderInput!) {
+		updateOrderAndInventory(orderId: $orderId, input: $input) {
+			id
+			status
+			updatedAt
+			items {
+				id
+				currentStatus
+				imagesByStatus
+				pieces {
+					name
+					status
+					note
+					location
+					imagesByStatus
+				}
+			}
+		}
+	}
+`;

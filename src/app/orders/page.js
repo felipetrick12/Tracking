@@ -1,5 +1,6 @@
 'use client';
 
+import OrdersAdminTable from '@/components/molecules/OrdersAdminTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertTriangle, CheckCircle, Package, Truck } from 'lucide-react';
 
@@ -21,7 +22,7 @@ const OrdersPage = () => {
 						className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all data-[state=active]:bg-primary data-[state=active]:text-white hover:bg-primary/10"
 					>
 						<Truck size={16} />
-						<span className="font-medium">Receiving</span>
+						<span className="font-medium">Accepted</span>
 					</TabsTrigger>
 
 					<TabsTrigger
@@ -49,17 +50,25 @@ const OrdersPage = () => {
 					</TabsTrigger>
 				</TabsList>
 
-				<TabsContent value="pending">{/* Tabla de órdenes pendientes (estado: 'pending') */}</TabsContent>
-
-				<TabsContent value="receiving">
-					{/* Órdenes que ya aceptó el admin pero aún no se han despachado */}
+				<TabsContent value="pending">
+					<OrdersAdminTable status="pending" />
 				</TabsContent>
 
-				<TabsContent value="shipped">{/* Órdenes que están en manos del shipper */}</TabsContent>
+				<TabsContent value="receiving">
+					<OrdersAdminTable status="receiving" />
+				</TabsContent>
 
-				<TabsContent value="delivered">{/* Órdenes entregadas exitosamente */}</TabsContent>
+				<TabsContent value="shipped">
+					<OrdersAdminTable status="shipped" />
+				</TabsContent>
 
-				<TabsContent value="damaged">{/* Órdenes con problemas o productos dañados */}</TabsContent>
+				<TabsContent value="delivered">
+					<OrdersAdminTable status="delivered" />
+				</TabsContent>
+
+				<TabsContent value="damaged">
+					<OrdersAdminTable status="damaged" />
+				</TabsContent>
 			</Tabs>
 		</div>
 	);

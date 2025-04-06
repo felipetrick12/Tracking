@@ -9,6 +9,7 @@ import AdminDashboard from './AdminDashboard';
 import ClientDashboard from './ClientDashboard';
 import InventoryAdminTable from './InventoryAdminTable';
 import InventoryClientTable from './InventoryClientTable';
+import OrdersAdminTable from './OrdersAdminTable';
 import OrdersClientTable from './OrdersClientTable';
 import SuperDashboard from './SuperDashboard';
 
@@ -23,6 +24,7 @@ export {
 	ClientDashboard,
 	InventoryAdminTable,
 	InventoryClientTable,
+	OrdersAdminTable,
 	OrdersClientTable,
 	OrdersTable,
 	SuperDashboard

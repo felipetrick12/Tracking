@@ -1,7 +1,6 @@
 import { CardMetrics } from '@/components/atoms';
-import { AddTypeModal, OrdersTable } from '@/components/molecules';
+import { AddTypeModal } from '@/components/molecules';
 import { GET_SUPERADMIN_METRICS } from '@/graphql/queries/metrics';
-import { GET_ALL_ORDERS } from '@/graphql/queries/order';
 import { useQuery } from '@apollo/client';
 import { Boxes, UserCog } from 'lucide-react';
 
@@ -43,8 +42,6 @@ const SuperDashboard = () => {
 
 					<AddTypeModal icon={() => <UserCog size={40} />} title="Create Role" typeLabel="roles" />
 				</div>
-
-				<OrdersTable refetchMetrics={refetch} />
 			</div>
 		</div>
 	);

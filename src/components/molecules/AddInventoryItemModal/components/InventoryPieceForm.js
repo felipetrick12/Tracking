@@ -24,9 +24,6 @@ const InventoryPieceForm = ({ pieces = [], setPieces }) => {
 		}
 
 		const base64Images = await Promise.all(Array.from(files).map(fileToBase64));
-
-		console.log('✅ Base64 images:', base64Images); // 👈 esto debe mostrar base64 válidos
-
 		updatedItems[index].imagesByStatus[status].push(...base64Images);
 
 		setPieces(updatedItems);
