@@ -5,6 +5,8 @@ export const CREATE_USER = gql`
 		$name: String!
 		$email: String!
 		$password: String!
+		$address: String
+		$phone: String
 		$role: String!
 		$activeOrganization: ID
 		$assignedTo: ID
@@ -15,6 +17,8 @@ export const CREATE_USER = gql`
 			email: $email
 			password: $password
 			role: $role
+			address: $address
+			phone: $phone
 			activeOrganization: $activeOrganization
 			assignedTo: $assignedTo
 			photoUrl: $photoUrl # ✅ Send image
@@ -44,6 +48,8 @@ export const UPDATE_USER = gql`
 		$assignedTo: ID
 		$activeOrganization: ID
 		$photoUrl: String # ✅ Allow updating profile image
+		$address: String
+		$phone: String
 	) {
 		updateUser(
 			id: $id
@@ -52,11 +58,15 @@ export const UPDATE_USER = gql`
 			assignedTo: $assignedTo
 			activeOrganization: $activeOrganization
 			photoUrl: $photoUrl # ✅ Send new image URL
+			address: $address
+			phone: $phone
 		) {
 			id
 			name
 			role
 			photoUrl # ✅ Return updated image URL
+			phone
+			address
 			assignedTo {
 				id
 				name

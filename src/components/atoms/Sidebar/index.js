@@ -21,9 +21,9 @@ import {
 const ROUTES = [
 	{ path: '/dashboard', label: 'Home', icon: Home, roles: ['superadmin', 'admin', 'designer'] },
 	{ path: '/clients', label: 'Clients', icon: Users, roles: ['designer', 'client'] },
-	{ path: '/users', label: 'Users', icon: UserRound, roles: ['superadmin', 'admin'] },
 	{ path: '/orders', label: 'Orders', icon: FileText, roles: ['superadmin', 'admin'] },
 	{ path: '/inventory', label: 'Inventory', icon: Boxes, roles: ['superadmin'] },
+	{ path: '/users', label: 'Users', icon: UserRound, roles: ['superadmin', 'admin'] },
 	{ path: '/organizations', label: 'Organizations', icon: Building, roles: ['superadmin'] }
 ];
 

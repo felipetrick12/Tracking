@@ -9,6 +9,9 @@ export const GET_USERS = gql`
 			email
 			role
 			photoUrl
+			address
+			phone
+			lastLogin
 			activeOrganization {
 				id
 				name

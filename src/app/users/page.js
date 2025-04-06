@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { GET_USERS } from '@/graphql/queries/user';
 import { useQuery } from '@apollo/client';
 import { UserIcon } from '@heroicons/react/24/outline';
+import dayjs from 'dayjs';
 import { Pencil } from 'lucide-react';
 import { useState } from 'react';
 
@@ -53,8 +54,11 @@ const UsersPage = () => {
 							<TableHead>Photo</TableHead>
 							<TableHead>Name</TableHead>
 							<TableHead>Email</TableHead>
+							<TableHead>Address</TableHead>
+							<TableHead>Phone</TableHead>
 							<TableHead>Role</TableHead>
 							<TableHead>Assigned Designer</TableHead>
+							<TableHead>Last Login</TableHead>
 							<TableHead>Organization</TableHead>
 							<TableHead className="text-right">Actions</TableHead>
 						</TableRow>
@@ -73,8 +77,13 @@ const UsersPage = () => {
 								</TableCell>
 								<TableCell className="font-medium">{user.name}</TableCell>
 								<TableCell>{user.email}</TableCell>
+								<TableCell>{user.address || 'N/A'}</TableCell>
+								<TableCell>{user.phone || 'N/A'}</TableCell>
 								<TableCell className="capitalize">{user.role}</TableCell>
 								<TableCell>{user.assignedTo?.name || 'N/A'}</TableCell>
+								<TableCell className="capitalize">
+									{user.lastLogin ? dayjs(user.lastLogin).format('DD/MM/YYYY HH:mm') : 'N/A'}
+								</TableCell>
 								<TableCell>{user.activeOrganization?.name || 'N/A'}</TableCell>
 								<TableCell className="text-right">
 									<Button
