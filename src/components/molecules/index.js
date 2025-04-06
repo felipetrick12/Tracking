@@ -8,7 +8,8 @@ import AddUserForm from './AddUserForm';
 import AdminDashboard from './AdminDashboard';
 import ClientDashboard from './ClientDashboard';
 import InventoryAdminTable from './InventoryAdminTable';
-import { default as InventoryClientTable, default as OrdersClientTable } from './InventoryClientTable';
+import InventoryClientTable from './InventoryClientTable';
+import OrdersClientTable from './OrdersClientTable';
 import SuperDashboard from './SuperDashboard';
 
 export {

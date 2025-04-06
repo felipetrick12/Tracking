@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { GET_ME } from '@/graphql/queries/auth';
 import { GET_MY_CLIENTS } from '@/graphql/queries/user';
 
-import { AddClientOrderModal, InventoryClientTable } from '@/components/molecules';
+import { AddClientOrderModal, InventoryClientTable, OrdersClientTable } from '@/components/molecules';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -98,7 +98,7 @@ const ClientOrdersDashboard = () => {
 						</TabsContent>
 
 						<TabsContent value="workorders">
-							{/* <WorkOrdersClientTable selectedClient={selectedClient} /> */}
+							<OrdersClientTable designerID={userId} />
 						</TabsContent>
 					</Tabs>
 				) : (
