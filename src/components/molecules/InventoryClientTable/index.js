@@ -4,7 +4,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { GET_INVENTORY_BY_CLIENT } from '@/graphql/queries/inventory';
 import { useQuery } from '@apollo/client';
 import { format } from 'date-fns';
-
 import { useState } from 'react';
 
 const ImageSlider = ({ images = [], height = 'h-20', width = 'w-20', rounded = 'rounded-md' }) => {
@@ -42,6 +41,16 @@ const ImageSlider = ({ images = [], height = 'h-20', width = 'w-20', rounded = '
 			)}
 		</div>
 	);
+};
+
+const getFirstImage = (imagesByStatus) => {
+	const statuses = Object.keys(imagesByStatus || {});
+	for (const status of statuses) {
+		if (imagesByStatus[status]?.length) {
+			return imagesByStatus[status];
+		}
+	}
+	return [];
 };
 
 const InventoryClientTable = ({ selectedClient, selectedItems, setSelectedItems }) => {
@@ -92,13 +101,13 @@ const InventoryClientTable = ({ selectedClient, selectedItems, setSelectedItems 
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead className="w-[50px]">Select</TableHead>
+								<TableHead className="w-[50px]" />
 								<TableHead className="w-[100px]">Image</TableHead>
-								<TableHead>ID</TableHead>
 								<TableHead>Name & Pieces</TableHead>
 								<TableHead>Category</TableHead>
 								<TableHead>Status</TableHead>
-								<TableHead>Created At</TableHead>
+								<TableHead>Location</TableHead>
+								<TableHead>Created</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -112,39 +121,41 @@ const InventoryClientTable = ({ selectedClient, selectedItems, setSelectedItems 
 									</TableCell>
 
 									<TableCell>
-										<ImageSlider images={item.images} height="h-16" width="w-16" />
+										<ImageSlider
+											images={getFirstImage(item.imagesByStatus)}
+											height="h-16"
+											width="w-16"
+										/>
 									</TableCell>
 
-									<TableCell className="text-xs text-muted-foreground">{item.id}</TableCell>
-
 									<TableCell>
-										<div>
-											<p className="font-medium">{item.name}</p>
-											{item.pieces?.length > 0 && (
-												<div className="mt-1 flex gap-2 flex-wrap">
-													{item.pieces.map((piece, idx) => (
-														<div
-															key={idx}
-															className="flex items-center gap-1 text-xs text-muted-foreground"
-														>
-															<ImageSlider
-																images={piece.images}
-																height="h-6"
-																width="w-6"
-																rounded="rounded"
-															/>
-
-															<span>{piece.name}</span>
-														</div>
-													))}
-												</div>
-											)}
-										</div>
+										<p className="font-medium">{item.name}</p>
+										{item.pieces?.length > 0 && (
+											<div className="mt-1 flex gap-2 flex-wrap">
+												{item.pieces.map((piece, idx) => (
+													<div
+														key={idx}
+														className="flex items-center gap-1 text-xs text-muted-foreground"
+													>
+														<ImageSlider
+															images={getFirstImage(piece.imagesByStatus)}
+															height="h-6"
+															width="w-6"
+															rounded="rounded"
+														/>
+														<span>{piece.name}</span>
+														<span className="text-[10px] italic">({piece.location})</span>
+													</div>
+												))}
+											</div>
+										)}
 									</TableCell>
 
 									<TableCell className="text-sm">{item.category?.name || '—'}</TableCell>
 
 									<TableCell className="capitalize text-sm">{item.currentStatus}</TableCell>
+
+									<TableCell className="text-sm">{item.location}</TableCell>
 
 									<TableCell className="text-sm">{format(new Date(item.createdAt), 'P')}</TableCell>
 								</TableRow>

@@ -4,10 +4,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { getStatusRowClass } from '@/utils/getStatusRowClass';
 
+const fileToBase64 = (file) =>
+	new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.readAsDataURL(file); // ✅ esto está bien
+		reader.onload = () => resolve(reader.result); // 👈 esto devuelve un base64 válido
+		reader.onerror = (error) => reject(error);
+	});
+
 const InventoryPieceForm = ({ pieces = [], setPieces }) => {
-	const handleItemImageChange = (index, files, status = 'received') => {
+	const handleItemImageChange = async (index, files, status = 'received') => {
 		const updatedItems = [...pieces];
-		const imageUrls = Array.from(files).map((file) => URL.createObjectURL(file));
 
 		if (!updatedItems[index].imagesByStatus) {
 			updatedItems[index].imagesByStatus = {};
@@ -16,7 +23,11 @@ const InventoryPieceForm = ({ pieces = [], setPieces }) => {
 			updatedItems[index].imagesByStatus[status] = [];
 		}
 
-		updatedItems[index].imagesByStatus[status].push(...imageUrls);
+		const base64Images = await Promise.all(Array.from(files).map(fileToBase64));
+
+		console.log('✅ Base64 images:', base64Images); // 👈 esto debe mostrar base64 válidos
+
+		updatedItems[index].imagesByStatus[status].push(...base64Images);
 
 		setPieces(updatedItems);
 	};
@@ -44,7 +55,6 @@ const InventoryPieceForm = ({ pieces = [], setPieces }) => {
 
 	const handlePieceImageChange = async (itemIndex, pieceIndex, files, status = 'received') => {
 		const updatedItems = [...pieces];
-		const imageUrls = Array.from(files).map((file) => URL.createObjectURL(file));
 
 		if (!updatedItems[itemIndex].pieces[pieceIndex].imagesByStatus) {
 			updatedItems[itemIndex].pieces[pieceIndex].imagesByStatus = {};
@@ -53,7 +63,9 @@ const InventoryPieceForm = ({ pieces = [], setPieces }) => {
 			updatedItems[itemIndex].pieces[pieceIndex].imagesByStatus[status] = [];
 		}
 
-		updatedItems[itemIndex].pieces[pieceIndex].imagesByStatus[status].push(...imageUrls);
+		const base64Images = await Promise.all(Array.from(files).map(fileToBase64));
+		updatedItems[itemIndex].pieces[pieceIndex].imagesByStatus[status].push(...base64Images);
+
 		setPieces(updatedItems);
 	};
 

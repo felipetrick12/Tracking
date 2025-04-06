@@ -1,6 +1,5 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -40,8 +39,16 @@ const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, set
 				id: item.category?.id,
 				name: item.category?.name
 			},
-			image: item.image ? [item.image] : [],
-			pieces: [] // Optional, add if necessary
+			currentStatus: item.currentStatus,
+			imagesByStatus: item.imagesByStatus || {},
+			pieces:
+				item.pieces?.map((piece) => ({
+					name: piece.name,
+					status: piece.status,
+					note: piece.note || '',
+					location: piece.location || '',
+					imagesByStatus: piece.imagesByStatus || {}
+				})) || []
 		}));
 
 		const input = {
@@ -50,6 +57,8 @@ const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, set
 			quantity: items.length,
 			items
 		};
+
+		console.log('first input', input);
 
 		try {
 			await createOrder({ variables: { input } });
@@ -60,9 +69,7 @@ const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, set
 				poNumber: '',
 				itemNumber: '',
 				description: '',
-				status: 'pending',
-				deliveryAddress: '',
-				warehouseAddress: ''
+				status: ''
 			});
 			setSelectedItems([]);
 			refetch && refetch();
@@ -100,35 +107,68 @@ const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, set
 								{selectedItems.map((item, index) => (
 									<div
 										key={item.id}
-										className="relative flex items-start justify-between gap-4 border rounded-lg p-4 bg-muted/50 shadow-sm"
+										className="relative flex flex-col gap-3 border rounded-lg p-4 bg-muted/50 shadow-sm"
 									>
-										<div className="flex items-start gap-3">
-											<div className="pt-1 text-muted-foreground">
-												{getCategoryIcon(item.category)}
+										{/* Header del item */}
+										<div className="flex items-start justify-between">
+											<div className="flex items-start gap-3">
+												<div className="pt-1 text-muted-foreground">
+													{getCategoryIcon(item.category)}
+												</div>
+												<div>
+													<p className="font-semibold">{item.name}</p>
+													<p className="text-xs text-muted-foreground">
+														Category: {item.category?.name}
+													</p>
+												</div>
 											</div>
-											<div>
-												<p className="font-semibold">{item.name}</p>
-												<p className="text-xs text-muted-foreground">
-													Category: {item.category?.name}
-												</p>
-												<Badge variant="outline" className="mt-1 text-[10px]">
-													ID: {item.id.slice(-6)}
-												</Badge>
-											</div>
+											<Button
+												type="button"
+												size="icon"
+												variant="ghost"
+												className="text-muted-foreground hover:text-destructive"
+												onClick={() => {
+													const updated = [...selectedItems];
+													updated.splice(index, 1);
+													setSelectedItems(updated);
+												}}
+											>
+												<X size={16} />
+											</Button>
 										</div>
-										<Button
-											type="button"
-											size="icon"
-											variant="ghost"
-											className="text-muted-foreground hover:text-destructive"
-											onClick={() => {
-												const updated = [...selectedItems];
-												updated.splice(index, 1);
-												setSelectedItems(updated);
-											}}
-										>
-											<X size={16} />
-										</Button>
+
+										{/* Imagen principal */}
+										{item.imagesByStatus?.received?.[0] && (
+											<img
+												src={item.imagesByStatus.received[0]}
+												alt="Item"
+												className="w-full h-48 object-cover rounded-lg border"
+											/>
+										)}
+
+										{/* Pieces */}
+										{item.pieces?.length > 0 && (
+											<div className="mt-2 bg-white p-3 rounded-lg border">
+												<p className="text-xs font-medium mb-2">Pieces:</p>
+												<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+													{item.pieces.map((piece, pIndex) => (
+														<div key={pIndex} className="border rounded p-2">
+															<p className="text-sm font-semibold">Piece: {piece.name}</p>
+															<p className="text-xs text-muted-foreground">
+																Status: {piece.status}
+															</p>
+															{piece.imagesByStatus?.received?.[0] && (
+																<img
+																	src={piece.imagesByStatus.received[0]}
+																	alt="Piece"
+																	className="mt-1 w-full h-28 object-cover rounded border"
+																/>
+															)}
+														</div>
+													))}
+												</div>
+											</div>
+										)}
 									</div>
 								))}
 							</div>

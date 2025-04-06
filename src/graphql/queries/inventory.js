@@ -39,11 +39,13 @@ export const GET_INVENTORY_BY_CLIENT = gql`
 			currentStatus
 			location
 			createdAt
-			images
+			imagesByStatus
 			pieces {
 				name
-				description
-				images
+				status
+				note
+				location
+				imagesByStatus
 			}
 			category {
 				id

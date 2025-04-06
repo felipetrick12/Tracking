@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 
-// ✅ Crear nueva orden
+// ✅ Crear nueva orden (Admin/Diseñador)
 export const CREATE_ORDER = gql`
 	mutation CreateOrder($input: OrderInput!) {
 		createOrder(input: $input) {
@@ -24,35 +24,63 @@ export const CREATE_ORDER = gql`
 				name
 				qrCode
 				location
+				currentStatus
 				category {
 					id
 					name
+				}
+				imagesByStatus
+				pieces {
+					name
+					status
+					note
+					location
+					imagesByStatus
 				}
 			}
 		}
 	}
 `;
 
+// ✅ Crear orden como cliente (respuesta más simple)
 export const CREATE_ORDER_CLIENT = gql`
 	mutation CreateOrder($input: OrderInput!) {
 		createOrder(input: $input) {
 			id
-			receivedOn
 			status
 			description
+			createdAt
+			client {
+				id
+				name
+			}
 			designer {
 				id
 				name
 			}
-			client {
+			items {
 				id
 				name
+				qrCode
+				location
+				category {
+					id
+					name
+				}
+				imagesByStatus
+				pieces {
+					name
+					status
+					note
+					location
+					imagesByStatus
+				}
 			}
 		}
 	}
 `;
 
-// ✅ Actualizar una orden existente
+// ✅ Actualizar orden (se recomienda ajustar tu schema también si vas a usar este input)
 export const UPDATE_ORDER = gql`
 	mutation UpdateOrder($orderId: ID!, $input: OrderInput) {
 		updateOrder(orderId: $orderId, input: $input) {
@@ -60,32 +88,38 @@ export const UPDATE_ORDER = gql`
 			status
 			description
 			quantity
-			orderType
-			deliveryAddress
-			warehouseAddress
-			pieces {
-				name
-				quantity
-			}
-			carrier
-			shipper
 			itemNumber
 			poNumber
-			imagesByStatus
-			designer {
-				id
-				name
-			}
+			carrier
+			shipper
+			createdAt
+			updatedAt
 			client {
 				id
 				name
 			}
-			category {
+			designer {
 				id
 				name
 			}
-			createdAt
-			updatedAt
+			items {
+				id
+				name
+				qrCode
+				location
+				category {
+					id
+					name
+				}
+				imagesByStatus
+				pieces {
+					name
+					status
+					note
+					location
+					imagesByStatus
+				}
+			}
 		}
 	}
 `;
