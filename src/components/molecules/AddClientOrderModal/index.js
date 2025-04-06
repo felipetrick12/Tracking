@@ -58,8 +58,6 @@ const AddClientOrderModal = ({ open, setOpen, selectedClient, selectedItems, set
 			items
 		};
 
-		console.log('first input', input);
-
 		try {
 			await createOrder({ variables: { input } });
 

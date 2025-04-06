@@ -1,5 +1,6 @@
 'use client';
 
+import { QRCodeScanner } from '@/components/atoms';
 import { AddInventoryItemModal } from '@/components/molecules';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -12,29 +13,6 @@ import { useLazyQuery, useQuery } from '@apollo/client';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { useState } from 'react';
-import { QrReader } from 'react-qr-reader';
-
-const QRCodeScanner = ({ onScan }) => {
-	const handleScan = (data) => {
-		if (data) onScan(data);
-	};
-
-	const handleError = (err) => {
-		console.log('QR SCAN ERROR:', err);
-	};
-
-	return (
-		<QrReader
-			delay={300}
-			onResult={(result, error) => {
-				if (!!result) handleScan(result?.text);
-				if (!!error) handleError(error);
-			}}
-			constraints={{ facingMode: 'environment' }}
-			style={{ width: '100%' }}
-		/>
-	);
-};
 
 const Inventory = () => {
 	const { toast } = useToast();

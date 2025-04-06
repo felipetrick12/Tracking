@@ -9,7 +9,9 @@ export const GET_ALL_INVENTORY = gql`
 			qrCode
 			qrCodeImage
 			currentStatus
+			imagesByStatus
 			createdAt
+			updatedAt
 			order {
 				id
 			}
@@ -24,6 +26,25 @@ export const GET_ALL_INVENTORY = gql`
 			category {
 				id
 				name
+			}
+
+			pieces {
+				name
+				status
+				note
+				location
+				imagesByStatus
+			}
+
+			statusHistory {
+				status
+				changedAt
+				note
+				images
+				changedBy {
+					id
+					name
+				}
 			}
 		}
 	}

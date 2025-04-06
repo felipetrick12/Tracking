@@ -13,7 +13,8 @@ const InventoryForm = ({
 	clients,
 	clientsLoading,
 	handleSubmit,
-	setSelectedDesigner
+	setSelectedDesigner,
+	isEditMode
 }) => {
 	useEffect(() => {
 		if (formData.quantity && Number(formData.quantity) > 0) {
@@ -49,14 +50,22 @@ const InventoryForm = ({
 				</div>
 				<div>
 					<Label>Quantity</Label>
-					<Input type="number" name="quantity" value={formData.quantity} onChange={handleChange} min={1} />
+					<Input
+						type="number"
+						name="quantity"
+						value={formData.quantity}
+						onChange={handleChange}
+						min={1}
+						disabled={isEditMode}
+						className={isEditMode ? 'opacity-50 cursor-not-allowed' : ''}
+					/>
 					{errors.quantity && <p className="text-sm text-red-500 mt-1">{errors.quantity}</p>}
 				</div>
 			</div>
 
 			<div>
 				<Label>Category</Label>
-				<Select onValueChange={(value) => handleSelectChange('category', value)}>
+				<Select value={formData.category} onValueChange={(value) => handleSelectChange('category', value)}>
 					<SelectTrigger>
 						<SelectValue placeholder="Select category" />
 					</SelectTrigger>
@@ -68,12 +77,14 @@ const InventoryForm = ({
 						))}
 					</SelectContent>
 				</Select>
+
 				{errors.category && <p className="text-sm text-red-500 mt-1">{errors.category}</p>}
 			</div>
 
 			<div>
 				<Label>Designer</Label>
 				<Select
+					value={formData.designer}
 					onValueChange={(value) => {
 						handleSelectChange('designer', value);
 						setSelectedDesigner(value);
@@ -95,12 +106,13 @@ const InventoryForm = ({
 						))}
 					</SelectContent>
 				</Select>
+
 				{errors.designer && <p className="text-sm text-red-500 mt-1">{errors.designer}</p>}
 			</div>
 
 			<div>
 				<Label>Client</Label>
-				<Select onValueChange={(value) => handleSelectChange('client', value)}>
+				<Select value={formData.client} onValueChange={(value) => handleSelectChange('client', value)}>
 					<SelectTrigger>
 						<SelectValue placeholder="Select client" />
 					</SelectTrigger>
@@ -122,6 +134,7 @@ const InventoryForm = ({
 						)}
 					</SelectContent>
 				</Select>
+
 				{errors.client && <p className="text-sm text-red-500 mt-1">{errors.client}</p>}
 			</div>
 		</form>

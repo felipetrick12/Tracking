@@ -141,7 +141,6 @@ const InventoryPieceForm = ({ pieces = [], setPieces }) => {
 								}
 								className="mt-2"
 							/>
-
 							{item.imagesByStatus?.[item.status]?.map((img, i) => (
 								<div key={i} className="relative inline-block mr-2">
 									<img

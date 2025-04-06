@@ -41,3 +41,14 @@ export const CREATE_MULTIPLE_INVENTORY_ITEMS = gql`
 		}
 	}
 `;
+
+export const UPDATE_INVENTORY_ITEM = gql`
+	mutation UpdateInventoryItem($id: ID!, $input: UpdateInventoryItemInput!) {
+		updateInventoryItem(id: $id, input: $input) {
+			id
+			name
+			location
+			currentStatus
+		}
+	}
+`;

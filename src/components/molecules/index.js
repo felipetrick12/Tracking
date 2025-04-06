@@ -1,4 +1,3 @@
-import OrdersTable from '../molecules/OrdersTable';
 import AddAdminOrderModal from './AddAdminOrderModal';
 import AddClientOrderModal from './AddClientOrderModal';
 import AddInventoryItemModal from './AddInventoryItemModal';
@@ -26,6 +25,5 @@ export {
 	InventoryClientTable,
 	OrdersAdminTable,
 	OrdersClientTable,
-	OrdersTable,
 	SuperDashboard
 };

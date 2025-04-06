@@ -44,15 +44,18 @@ const OrdersClientTable = ({ designerID }) => {
 
 	const orders = data?.getOrders || [];
 
-	console.log('ORDERS', orders);
-
 	return (
 		<Card className="p-6">
 			<Table>
 				<TableHeader>
 					<TableRow>
 						<TableHead>Order ID</TableHead>
+						<TableHead>Item Number</TableHead>
+						<TableHead>PO Number</TableHead>
+						<TableHead>Designer</TableHead>
 						<TableHead>Client</TableHead>
+						<TableHead>Carrier</TableHead>
+						<TableHead>Shipper</TableHead>
 						<TableHead>Items</TableHead>
 						<TableHead>Created</TableHead>
 						<TableHead>Accepted</TableHead>
@@ -61,18 +64,26 @@ const OrdersClientTable = ({ designerID }) => {
 						<TableHead>Actions</TableHead>
 					</TableRow>
 				</TableHeader>
+
 				<TableBody>
 					{orders.map((order) => (
 						<React.Fragment key={order.id}>
 							<TableRow className={`transition hover:bg-muted ${getStatusRowClass(order.status)}`}>
 								<TableCell className="font-mono text-xs">{order.id.slice(-6)}</TableCell>
-								<TableCell>{order.client?.name}</TableCell>
+								<TableCell>{order.itemNumber || '-'}</TableCell>
+								<TableCell>{order.poNumber || '-'}</TableCell>
+								<TableCell>{order.designer?.name || '-'}</TableCell>
+								<TableCell>{order.client?.name || '-'}</TableCell>
+								<TableCell>{order.carrier || '-'}</TableCell>
+								<TableCell>{order.shipper || '-'}</TableCell>
 								<TableCell>{order.items.length}</TableCell>
 								<TableCell>
-									{order.createdAt && (
+									{order.createdAt ? (
 										<span className="text-sm text-muted-foreground">
 											{format(new Date(order.createdAt), 'Pp')}
 										</span>
+									) : (
+										<span className="text-sm text-muted-foreground italic">—</span>
 									)}
 								</TableCell>
 								<TableCell>
@@ -114,7 +125,7 @@ const OrdersClientTable = ({ designerID }) => {
 
 							{expandedRow === order.id && (
 								<TableRow>
-									<TableCell colSpan={4} className="bg-muted/40">
+									<TableCell colSpan={13} className="bg-muted/40">
 										<div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
 											{order.items.map((item) => {
 												const selectedStatus =
@@ -147,8 +158,9 @@ const OrdersClientTable = ({ designerID }) => {
 
 														<div className="flex-1">
 															<p className="font-semibold">{item.name}</p>
+
 															<p className="text-sm text-muted-foreground">
-																QR: {item.qrCode} | Location: {item.location}
+																QR: {item.qrCode} | Location: {item.location || '-'}
 															</p>
 															<Badge variant="outline" className="mt-1 text-[10px]">
 																Current: {item.currentStatus}

@@ -161,8 +161,6 @@ const AddAdminOrderModal = ({ open, setOpen, order = null, refetch }) => {
 			const cleanInput = sanitizeOrderInput(formData);
 
 			if (isEditMode) {
-				console.log('first', { orderId: order.id, input: cleanInput });
-
 				await updateOrder({ variables: { orderId: order.id, input: cleanInput } });
 				toast({ title: '✅ Order updated successfully!' });
 			} else {

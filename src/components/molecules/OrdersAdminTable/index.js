@@ -61,8 +61,6 @@ const OrdersAdminTable = ({ status }) => {
 
 	const orders = data?.getOrders || [];
 
-	console.log('orders', orders);
-
 	return (
 		<Card className="p-6">
 			<Table>
