@@ -2,7 +2,7 @@
 
 import OrdersAdminTable from '@/components/molecules/OrdersAdminTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, CheckCircle, Package, Truck } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Inbox, Package, Truck } from 'lucide-react';
 
 const OrdersPage = () => {
 	return (
@@ -18,11 +18,11 @@ const OrdersPage = () => {
 					</TabsTrigger>
 
 					<TabsTrigger
-						value="receiving"
+						value="received"
 						className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all data-[state=active]:bg-primary data-[state=active]:text-white hover:bg-primary/10"
 					>
-						<Truck size={16} />
-						<span className="font-medium">Accepted</span>
+						<Inbox size={16} />
+						<span className="font-medium">Received</span>
 					</TabsTrigger>
 
 					<TabsTrigger
@@ -54,8 +54,8 @@ const OrdersPage = () => {
 					<OrdersAdminTable status="pending" />
 				</TabsContent>
 
-				<TabsContent value="receiving">
-					<OrdersAdminTable status="receiving" />
+				<TabsContent value="received">
+					<OrdersAdminTable status="received" />
 				</TabsContent>
 
 				<TabsContent value="shipped">

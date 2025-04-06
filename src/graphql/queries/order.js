@@ -14,6 +14,9 @@ export const GET_ORDERS = gql`
 			acceptedAt
 			shippedAt
 			deliveredAt
+			damagedAt
+			shipper
+			carrier
 			client {
 				id
 				name
